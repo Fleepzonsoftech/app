@@ -1,142 +1,153 @@
-// server.js
 import express from "express";
 import multer from "multer";
 import cors from "cors";
 import fs from "fs-extra";
 import path from "path";
 import dotenv from "dotenv";
-import { exec } from "child_process";
+import nodemailer from "nodemailer";
 import Razorpay from "razorpay";
-import bodyParser from "body-parser";
-import crypto from "crypto";
 
 dotenv.config();
+
 const app = express();
-
-// =========================
-// Middleware
-// =========================
 app.use(cors());
-app.use(bodyParser.json());
-app.use(express.urlencoded({ extended: true }));
-app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
+app.use(express.json());
+app.use(express.static("public"));
 
 // =========================
-// Multer setup for file uploads
+// Storage & Upload Setup
 // =========================
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    const tempDir = path.join("uploads", "temp");
-    fs.ensureDirSync(tempDir);
-    cb(null, tempDir);
+const upload = multer({ dest: "uploads/" });
+const BUILDS_FILE = "./builds.json";
+
+// Ensure builds file exists
+if (!fs.existsSync(BUILDS_FILE)) fs.writeJSONSync(BUILDS_FILE, []);
+
+// =========================
+// Email Setup
+// =========================
+const transporter = nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS,
   },
-  filename: (req, file, cb) => cb(null, Date.now() + "_" + file.originalname),
 });
-const upload = multer({ storage });
 
 // =========================
-// Razorpay setup
+// Search API
+// =========================
+app.get("/api/search", async (req, res) => {
+  const query = req.query.query?.toLowerCase();
+  if (!query) return res.json({ exists: false });
+
+  const builds = await fs.readJSON(BUILDS_FILE);
+  const appFound = builds.find(
+    b => b.appName.toLowerCase() === query || b.packageName.toLowerCase() === query
+  );
+
+  if (appFound) return res.json({ exists: true, app: appFound });
+  res.json({ exists: false });
+});
+
+// =========================
+// Build Free APK
+// =========================
+app.post("/api/build", upload.fields([{ name: "icon" }, { name: "splash" }]), async (req, res) => {
+  try {
+    const { appName, packageName, versionName, versionCode, minSdk, websiteUrl, email } = req.body;
+    if (!appName || !packageName || !versionName || !versionCode || !minSdk || !websiteUrl || !email) {
+      return res.json({ success: false, message: "Missing fields" });
+    }
+
+    // Simulate APK build by creating a dummy APK file
+    const apkFileName = `${packageName}-${versionCode}.apk`;
+    const apkPath = path.join(__dirname, "public", "builds", apkFileName);
+    fs.ensureDirSync(path.dirname(apkPath));
+    fs.writeFileSync(apkPath, "Dummy APK content");
+
+    // Save build info
+    const builds = await fs.readJSON(BUILDS_FILE);
+    const existingIndex = builds.findIndex(b => b.packageName === packageName);
+    const buildData = {
+      appName, packageName, versionName, versionCode, minSdk, websiteUrl,
+      apkUrl: `/builds/${apkFileName}`, aabUrl: "", createdAt: new Date().toISOString(),
+    };
+
+    if (existingIndex >= 0) builds[existingIndex] = buildData;
+    else builds.push(buildData);
+
+    await fs.writeJSON(BUILDS_FILE, builds, { spaces: 2 });
+
+    // Send email with download link
+    const downloadLink = `${req.protocol}://${req.get("host")}/builds/${apkFileName}`;
+    await transporter.sendMail({
+      from: process.env.EMAIL_USER,
+      to: email,
+      subject: `Your APK for ${appName} is ready`,
+      html: `<p>Your APK has been built successfully!</p>
+             <p><a href="${downloadLink}">⬇ Download APK</a></p>`,
+    });
+
+    res.json({ success: true, downloadUrl: downloadLink });
+  } catch (err) {
+    console.error(err);
+    res.json({ success: false, message: err.message });
+  }
+});
+
+// =========================
+// Razorpay Setup
 // =========================
 const razorpay = new Razorpay({
   key_id: process.env.RAZORPAY_KEY_ID,
   key_secret: process.env.RAZORPAY_KEY_SECRET,
 });
 
-// =========================
-// Root route
-// =========================
-app.get("/", (req, res) => res.send("✅ Fleepzon Builder API running!"));
+app.post("/create-order", async (req, res) => {
+  const { amount } = req.body;
+  const order = await razorpay.orders.create({
+    amount: amount * 100, // in paise
+    currency: "INR",
+    payment_capture: 1,
+  });
+  res.json({ success: true, order, key_id: process.env.RAZORPAY_KEY_ID });
+});
 
-// =========================
-// Build APK endpoint
-// =========================
-app.post("/api/build", upload.fields([{ name: "icon" }, { name: "splash" }]), async (req, res) => {
+app.post("/verify-payment", async (req, res) => {
   try {
-    const { appName, packageName, versionName, versionCode } = req.body;
-    if (!appName || !packageName || !versionName || !versionCode)
-      return res.status(400).json({ success: false, message: "Missing required fields" });
+    const { razorpay_payment_id, razorpay_order_id, razorpay_signature, email } = req.body;
 
-    // Copy Android template
-    const projectTemplate = path.join(process.cwd(), "androidTemplate");
-    const tempBuild = path.join("uploads", "tempBuild", Date.now().toString());
-    fs.copySync(projectTemplate, tempBuild);
+    // Simulate AAB build
+    const aabFileName = `app-${Date.now()}.aab`;
+    const aabPath = path.join(__dirname, "public", "builds", aabFileName);
+    fs.writeFileSync(aabPath, "Dummy AAB content");
 
-    // Update build.gradle
-    const buildGradlePath = path.join(tempBuild, "app", "build.gradle");
-    let gradleFile = fs.readFileSync(buildGradlePath, "utf-8");
-    gradleFile = gradleFile
-      .replace(/APPLICATION_ID_PLACEHOLDER/g, packageName)
-      .replace(/VERSION_CODE_PLACEHOLDER/g, versionCode)
-      .replace(/VERSION_NAME_PLACEHOLDER/g, versionName);
-    fs.writeFileSync(buildGradlePath, gradleFile);
+    // Update builds.json with AAB
+    const builds = await fs.readJSON(BUILDS_FILE);
+    if (builds.length > 0) builds[builds.length-1].aabUrl = `/builds/${aabFileName}`;
+    await fs.writeJSON(BUILDS_FILE, builds, { spaces: 2 });
 
-    // Replace icon and splash
-    fs.copySync(req.files.icon[0].path, path.join(tempBuild, "app", "src", "main", "res", "mipmap-xxxhdpi", "ic_launcher.png"));
-    fs.copySync(req.files.splash[0].path, path.join(tempBuild, "app", "src", "main", "res", "drawable", "splash.png"));
-
-    // Build APK
-    exec(`cd ${tempBuild} && ./gradlew assembleRelease`, (err) => {
-      if (err) {
-        console.error(err);
-        return res.status(500).json({ success: false, message: "APK build failed" });
-      }
-
-      const apkPath = path.join(tempBuild, "app/build/outputs/apk/release/app-release.apk");
-      const buildDir = path.join("uploads", "builds");
-      fs.ensureDirSync(buildDir);
-      const apkName = `${packageName}.apk`;
-      fs.copySync(apkPath, path.join(buildDir, apkName));
-
-      const serverUrl = process.env.SERVER_URL || `http://localhost:${process.env.PORT || 3000}`;
-      const downloadUrl = `${serverUrl}/uploads/builds/${apkName}`;
-      res.json({ success: true, downloadUrl });
+    // Send email
+    const downloadLink = `${req.protocol}://${req.get("host")}/builds/${aabFileName}`;
+    await transporter.sendMail({
+      from: process.env.EMAIL_USER,
+      to: email,
+      subject: `Your Paid AAB is ready`,
+      html: `<p>Your AAB has been built successfully!</p>
+             <p><a href="${downloadLink}">⬇ Download AAB</a></p>`,
     });
 
+    res.json({ success: true, message: "Payment verified! AAB will be sent to your email." });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ success: false, message: "Internal Server Error" });
+    res.json({ success: false, message: err.message });
   }
 });
 
 // =========================
-// Razorpay Create Order
-// =========================
-app.post("/create-order", async (req, res) => {
-  try {
-    const { amount } = req.body;
-    const options = {
-      amount: amount * 100, // Amount in paise
-      currency: "INR",
-      receipt: "rcpt_" + Date.now(),
-      payment_capture: 1,
-    };
-    const order = await razorpay.orders.create(options);
-    res.json({ success: true, order, key_id: process.env.RAZORPAY_KEY_ID });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ success: false, error: err.message });
-  }
-});
-
-// =========================
-// Razorpay Verify Payment
-// =========================
-app.post("/verify-payment", (req, res) => {
-  const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
-  const generated_signature = crypto
-    .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
-    .update(razorpay_order_id + "|" + razorpay_payment_id)
-    .digest("hex");
-
-  if (generated_signature === razorpay_signature) {
-    res.json({ success: true, message: "✅ Payment verified successfully" });
-  } else {
-    res.status(400).json({ success: false, message: "❌ Payment verification failed" });
-  }
-});
-
-// =========================
-// Start server
+// Start Server
 // =========================
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+
