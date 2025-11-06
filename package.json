@@ -1,7 +1,7 @@
 {
   "name": "web-to-app-builder",
   "version": "1.0.0",
-  "description": "A backend and frontend tool to convert websites into Android apps with file upload, MongoDB, and Razorpay integration.",
+  "description": "A backend and frontend tool to convert websites into Android apps with file upload, Razorpay payment, and email notification support.",
   "main": "server.js",
   "type": "module",
   "scripts": {
@@ -10,12 +10,11 @@
   },
   "dependencies": {
     "cors": "^2.8.5",
-    "crypto": "^1.0.1",
     "dotenv": "^16.3.1",
     "express": "^4.19.2",
     "fs-extra": "^11.2.0",
-    "mongoose": "^8.5.1",
     "multer": "^1.4.5-lts.1",
+    "nodemailer": "^6.9.13",
     "razorpay": "^2.9.4"
   },
   "devDependencies": {
@@ -25,14 +24,15 @@
     "web-to-app",
     "express",
     "razorpay",
-    "mongodb",
     "multer",
+    "nodemailer",
     "api",
-    "android-builder"
+    "android-builder",
+    "file-upload",
+    "backend"
   ],
-  "author": "Your Name",
+  "author": "App Builder",
   "license": "MIT",
-
   "examples": {
     "checkVersion": {
       "exists": true,
