@@ -57,23 +57,31 @@
   <!-- Razorpay checkout -->
   <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
   <script>
-    // Auto-detect backend URL for all devices
+    // =========================
+    // Automatic BACKEND_URL detection
+    // =========================
     let BACKEND_URL = "";
     const ua = navigator.userAgent.toLowerCase();
 
     if (ua.includes("android") && window.location.hostname === "localhost") {
-        // Android emulator
-        BACKEND_URL = "http://10.0.2.2:3000";
+      // Android emulator
+      BACKEND_URL = "http://10.0.2.2:3000";
+    } else if (ua.includes("android") || ua.includes("iphone") || ua.includes("ipad")) {
+      // Real mobile device (replace with your PC LAN IP)
+      BACKEND_URL = "http://192.168.0.25:3000"; // <-- CHANGE to your PC's LAN IP
     } else {
-        // PC, laptop, or mobile on same network
-        BACKEND_URL = `${window.location.protocol}//${window.location.hostname}:3000`;
+      // PC/laptop
+      BACKEND_URL = `${window.location.protocol}//${window.location.hostname}:3000`;
     }
+
     console.log("Using BACKEND_URL:", BACKEND_URL);
 
+    // =========================
+    // Build APK form
+    // =========================
     const form = document.getElementById("appForm");
     const resultBox = document.getElementById("result");
 
-    // Build APK form submission
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
       resultBox.style.display = "block";
@@ -108,7 +116,9 @@
       }
     });
 
+    // =========================
     // Paid AAB button
+    // =========================
     document.getElementById("payAAB").addEventListener("click", async () => {
       try {
         const res = await fetch(`${BACKEND_URL}/create-order`, {
@@ -145,3 +155,4 @@
   </script>
 </body>
 </html>
+
