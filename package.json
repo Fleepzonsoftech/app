@@ -1,19 +1,31 @@
 {
   "name": "web-to-app-builder",
   "version": "1.0.0",
+  "description": "Web to Android App Builder API with Razorpay integration",
   "main": "server.js",
+  "type": "module",
   "scripts": {
     "start": "node server.js",
     "dev": "nodemon server.js"
   },
+  "keywords": [
+    "web-to-app",
+    "apk-builder",
+    "razorpay",
+    "android"
+  ],
+  "author": "Fleepzon Softech",
+  "license": "MIT",
   "dependencies": {
-    "body-parser": "^1.20.2",
+    "body-parser": "^1.20.3",
     "cors": "^2.8.5",
+    "crypto": "^1.0.1",
     "dotenv": "^16.3.1",
     "express": "^4.18.2",
     "fs-extra": "^11.1.1",
     "multer": "^1.4.5-lts.1",
-    "razorpay": "^2.8.0"
+    "path": "^0.12.7",
+    "razorpay": "^2.8.7"
   },
   "devDependencies": {
     "nodemon": "^3.0.2"
