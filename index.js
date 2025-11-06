@@ -57,8 +57,18 @@
   <!-- Razorpay checkout -->
   <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
   <script>
-    // Automatically detect backend IP using current host
-    const BACKEND_URL = `${window.location.protocol}//${window.location.hostname}:3000`;
+    // Automatically detect backend URL for all devices
+    let BACKEND_URL = "";
+    const ua = navigator.userAgent.toLowerCase();
+
+    if (ua.includes("android") && window.location.hostname === "localhost") {
+        // Android emulator
+        BACKEND_URL = "http://10.0.2.2:3000";
+    } else {
+        // PC, laptop, or mobile on same network
+        BACKEND_URL = `${window.location.protocol}//${window.location.hostname}:3000`;
+    }
+    console.log("Using BACKEND_URL:", BACKEND_URL);
 
     const form = document.getElementById("appForm");
     const resultBox = document.getElementById("result");
