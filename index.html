@@ -40,6 +40,7 @@
       <label>Upload Splash Screen *</label>
       <input type="file" name="splash" accept="image/*" required>
       <input type="email" name="email" placeholder="Email *" required>
+
       <button type="submit" class="btn-success">🚀 Generate Free APK</button>
     </form>
 
@@ -56,12 +57,13 @@
   <!-- Razorpay checkout -->
   <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
   <script>
-    // Replace with your deployed backend server URL
-    const BACKEND_URL = "https://your-backend-domain.com";
+    // Replace this with your live backend URL
+    const BACKEND_URL = "https://YOUR_BACKEND_URL_HERE";
 
     const form = document.getElementById("appForm");
     const resultBox = document.getElementById("result");
 
+    // Build APK form submission
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
       resultBox.style.display = "block";
@@ -96,6 +98,7 @@
       }
     });
 
+    // Paid AAB button
     document.getElementById("payAAB").addEventListener("click", async () => {
       try {
         const res = await fetch(`${BACKEND_URL}/create-order`, {
