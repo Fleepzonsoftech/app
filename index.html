@@ -64,14 +64,14 @@ footer { margin-top:40px; text-align:center; font-size:14px; color:#666; }
 
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 <script>
-const BACKEND_URL = "https://fleepzonsoftech.sbs";
+const BACKEND_URL = "https://fleepzonsoftech.sbs"; // Replace with your server URL
 const searchBtn = document.getElementById("searchBtn");
 const searchInput = document.getElementById("searchInput");
 const searchResult = document.getElementById("searchResult");
 const form = document.getElementById("appForm");
 const resultBox = document.getElementById("result");
 
-let buildExists = false; // Flag if app already exists
+let buildExists = false;
 
 // =========================
 // Search App
@@ -79,7 +79,6 @@ let buildExists = false; // Flag if app already exists
 searchBtn.addEventListener("click", async () => {
   const query = searchInput.value.trim();
   if(!query) return alert("Enter App Name or Package Name to search!");
-  
   try {
     const res = await fetch(`${BACKEND_URL}/api/search?query=${encodeURIComponent(query)}`);
     const data = await res.json();
@@ -90,7 +89,6 @@ searchBtn.addEventListener("click", async () => {
       document.getElementById("packageName").value = data.app.packageName;
       document.getElementById("appName").readOnly = true;
       document.getElementById("packageName").readOnly = true;
-      
       searchResult.style.display = "block";
       searchResult.innerHTML = `
         ✅ App Found!<br>
@@ -124,18 +122,14 @@ form.addEventListener("submit", async e => {
   resultBox.innerHTML = "⏳ Please wait... Building your APK and sending email...";
   
   const formData = new FormData(form);
-  
   try {
     const res = await fetch(`${BACKEND_URL}/api/build`, { method: "POST", body: formData });
     const data = await res.json();
     if(data.success) {
       resultBox.style.background = "#e9f7ef";
       resultBox.style.color = "#155724";
-      resultBox.innerHTML = `
-        ✅ Build Success!<br>
-        📧 Download link sent to your email.<br>
-        <a href="${data.downloadUrl}" target="_blank">⬇ Download APK</a>
-      `;
+      resultBox.innerHTML = `✅ Build Success!<br>📧 Download link sent to your email.<br>
+                             <a href="${data.downloadUrl}" target="_blank">⬇ Download APK</a>`;
     } else {
       resultBox.style.background = "#f8d7da";
       resultBox.style.color = "#721c24";
@@ -154,8 +148,8 @@ form.addEventListener("submit", async e => {
 // =========================
 document.getElementById("payAAB").addEventListener("click", async () => {
   const email = form.email.value;
-  if(!email) return alert("Enter email for AAB delivery!");
-
+  const packageName = form.packageName.value;
+  if(!email || !packageName) return alert("Enter email & package name for AAB delivery!");
   try {
     const res = await fetch(`${BACKEND_URL}/create-order`, {
       method:"POST",
@@ -176,11 +170,10 @@ document.getElementById("payAAB").addEventListener("click", async () => {
         const verifyRes = await fetch(`${BACKEND_URL}/verify-payment`, {
           method:"POST",
           headers:{'Content-Type':'application/json'},
-          body: JSON.stringify({ ...response, email })
+          body: JSON.stringify({ ...response, email, packageName })
         });
         const verifyData = await verifyRes.json();
         alert(verifyData.message);
-        if(verifyData.success) alert("✅ AAB build will be sent to your email automatically!");
       }
     };
     new Razorpay(options).open();
@@ -192,5 +185,3 @@ document.getElementById("payAAB").addEventListener("click", async () => {
 </script>
 </body>
 </html>
-
-
