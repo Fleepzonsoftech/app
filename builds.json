@@ -1,0 +1,24 @@
+[
+  {
+    "appName": "MyFirstApp",
+    "packageName": "com.example.myfirstapp",
+    "versionName": "1.0",
+    "versionCode": 1,
+    "minSdk": 21,
+    "websiteUrl": "https://example.com",
+    "apkUrl": "/builds/com.example.myfirstapp-1.apk",
+    "aabUrl": "/builds/com.example.myfirstapp-1.aab",
+    "createdAt": "2025-11-06T10:00:00.000Z"
+  },
+  {
+    "appName": "TestApp",
+    "packageName": "com.example.testapp",
+    "versionName": "1.2",
+    "versionCode": 2,
+    "minSdk": 29,
+    "websiteUrl": "https://test.com",
+    "apkUrl": "/builds/com.example.testapp-2.apk",
+    "aabUrl": "",
+    "createdAt": "2025-11-06T11:00:00.000Z"
+  }
+]
