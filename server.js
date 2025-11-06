@@ -12,15 +12,13 @@ import crypto from "crypto";
 dotenv.config();
 const app = express();
 
-// Enable CORS and parse JSON
+// Middleware
 app.use(cors());
 app.use(bodyParser.json());
 app.use(express.urlencoded({ extended: true }));
-
-// Serve uploaded APKs
 app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
 
-// Multer setup for icon/splash uploads
+// Multer setup for file uploads
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     const tempDir = path.join("uploads", "temp");
@@ -61,11 +59,11 @@ app.post("/api/build", upload.fields([{ name: "icon" }, { name: "splash" }]), as
       .replace(/VERSION_NAME_PLACEHOLDER/g, versionName);
     fs.writeFileSync(buildGradlePath, gradleFile);
 
-    // Copy uploaded icon & splash
+    // Copy icons & splash
     fs.copySync(req.files.icon[0].path, path.join(tempBuild, "app", "src", "main", "res", "mipmap-xxxhdpi", "ic_launcher.png"));
     fs.copySync(req.files.splash[0].path, path.join(tempBuild, "app", "src", "main", "res", "drawable", "splash.png"));
 
-    // Build APK
+    // Run Gradle build
     exec(`cd ${tempBuild} && ./gradlew assembleRelease`, (err) => {
       if (err) {
         console.error(err);
@@ -88,7 +86,7 @@ app.post("/api/build", upload.fields([{ name: "icon" }, { name: "splash" }]), as
   }
 });
 
-// Razorpay create order
+// Razorpay Create Order
 app.post("/create-order", async (req, res) => {
   try {
     const { amount } = req.body;
@@ -106,7 +104,7 @@ app.post("/create-order", async (req, res) => {
   }
 });
 
-// Razorpay verify payment
+// Razorpay Verify Payment
 app.post("/verify-payment", (req, res) => {
   const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
   const generated_signature = crypto
@@ -119,6 +117,6 @@ app.post("/verify-payment", (req, res) => {
   else res.status(400).json({ success: false, message: "❌ Payment verification failed" });
 });
 
-// Start server
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
+
