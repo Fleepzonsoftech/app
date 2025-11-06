@@ -107,13 +107,12 @@
   </footer>
 
   <script>
-    // 🌍 Backend URL — Change this after deploying your Node.js server
+    // 🌍 Backend URL — public live server
     const BACKEND_URL = "https://fleepzon-builder.onrender.com";
 
     const form = document.getElementById("appForm");
     const resultBox = document.getElementById("result");
 
-    // ✅ Free APK Generation
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
       resultBox.style.display = "block";
@@ -143,7 +142,7 @@
         } else {
           resultBox.style.background = "#f8d7da";
           resultBox.style.color = "#721c24";
-          resultBox.innerHTML = "❌ Build failed. Try again.";
+          resultBox.innerHTML = `❌ Build failed: ${data.message || "Try again"}`;
         }
       } catch (error) {
         console.error("❌ Error:", error);
@@ -153,7 +152,6 @@
       }
     });
 
-    // ✅ Paid AAB Generation (Future Feature)
     document.getElementById("payAAB").addEventListener("click", () => {
       alert("💳 Paid AAB generation will be available soon!");
     });
