@@ -25,7 +25,7 @@
 
     <form id="appForm" enctype="multipart/form-data">
       <input type="text" name="appName" placeholder="App Name *" required>
-      <input type="text" name="packageName" placeholder="Package Name (e.g., com.myapp.app) *" required>
+      <input type="text" name="packageName" placeholder="Package Name *" required>
       <input type="text" name="versionName" placeholder="Version Name *" required>
       <input type="number" name="versionCode" placeholder="Version Code *" required>
       <select name="minSdk" required>
@@ -34,7 +34,7 @@
         <option value="29">29 (Android 10)</option>
         <option value="34">34 (Android 14)</option>
       </select>
-      <input type="url" name="websiteUrl" placeholder="Website URL (https://example.com) *" required>
+      <input type="url" name="websiteUrl" placeholder="Website URL *" required>
       <label>Upload App Icon *</label>
       <input type="file" name="icon" accept="image/*" required>
       <label>Upload Splash Screen *</label>
@@ -55,7 +55,7 @@
   </footer>
 
   <script>
-    const BACKEND_URL = "https://fleepzon-builder.onrender.com";
+    const BACKEND_URL = "https://fleepzon-builder.onrender.com"; // Real backend URL
 
     const form = document.getElementById("appForm");
     const resultBox = document.getElementById("result");
