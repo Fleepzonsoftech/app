@@ -1,0 +1,156 @@
+/* =========================================
+   🌐 Web to App Builder - Global Stylesheet
+   ========================================= */
+
+/* -------- Base Layout -------- */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Poppins", sans-serif;
+}
+
+body {
+  background: #f3f6fa;
+  color: #222;
+  line-height: 1.6;
+}
+
+/* -------- Container -------- */
+.container {
+  max-width: 720px;
+  margin: 60px auto;
+  background: #fff;
+  padding: 40px 50px;
+  border-radius: 16px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+}
+
+/* -------- Headings -------- */
+h1, h2, h3 {
+  text-align: center;
+  color: #222;
+  margin-bottom: 25px;
+  font-weight: 600;
+}
+
+/* -------- Labels & Inputs -------- */
+label {
+  font-weight: 600;
+  display: block;
+  margin-bottom: 6px;
+  color: #444;
+}
+
+input, select, textarea {
+  width: 100%;
+  padding: 12px;
+  font-size: 15px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  outline: none;
+  margin-bottom: 18px;
+  transition: border-color 0.3s ease;
+}
+
+input:focus, textarea:focus {
+  border-color: #007bff;
+}
+
+/* -------- Buttons -------- */
+button {
+  display: inline-block;
+  width: 100%;
+  background: #007bff;
+  color: #fff;
+  font-weight: 600;
+  font-size: 16px;
+  padding: 12px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+button:hover {
+  background: #0056b3;
+}
+
+.btn-success {
+  background: #28a745;
+}
+
+.btn-danger {
+  background: #dc3545;
+}
+
+/* -------- Section Divider -------- */
+hr {
+  margin: 30px 0;
+  border: 0;
+  border-top: 1px solid #ddd;
+}
+
+/* -------- Result Box -------- */
+.result-box {
+  background: #f9fafb;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 20px;
+  margin-top: 20px;
+}
+
+.result-box p {
+  margin: 6px 0;
+  color: #333;
+}
+
+/* -------- Success & Error Alerts -------- */
+.alert {
+  padding: 12px 18px;
+  border-radius: 6px;
+  margin-bottom: 20px;
+}
+
+.alert-success {
+  background: #e8f9ee;
+  border-left: 5px solid #28a745;
+  color: #1e7e34;
+}
+
+.alert-error {
+  background: #fde8e8;
+  border-left: 5px solid #dc3545;
+  color: #b21f2d;
+}
+
+/* -------- Search Page Styles -------- */
+.search-bar {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.search-bar input {
+  flex: 1;
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+.search-bar button {
+  width: auto;
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+}
+
+/* -------- Responsive -------- */
+@media (max-width: 600px) {
+  .container {
+    margin: 30px 15px;
+    padding: 25px;
+  }
+
+  button {
+    font-size: 15px;
+  }
+}
