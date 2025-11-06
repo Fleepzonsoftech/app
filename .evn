@@ -1,16 +1,3 @@
-# Server port
-PORT=5000
-
-# Your live backend URL (used for APK download links)
-SERVER_URL=https://your-backend-domain.com
-
-# MongoDB (optional, if you plan to store submissions)
-MONGO_URI=mongodb://127.0.0.1:27017/webtoapp
-
-# Email credentials (optional, to send APK/AAB download links to users)
-EMAIL_USER=your-email@gmail.com
-EMAIL_PASS=your-app-password
-
-# Razorpay (optional, for paid AAB feature)
-RAZORPAY_KEY_ID=rzp_test_1234567890
-RAZORPAY_KEY_SECRET=your_razorpay_secret
+SERVER_URL=http://localhost:3000
+RAZORPAY_KEY_ID=YOUR_KEY_ID
+RAZORPAY_KEY_SECRET=YOUR_KEY_SECRET
