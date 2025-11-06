@@ -1,11 +1,7 @@
-# Server port
+# Server configuration
 PORT=3000
+SERVER_URL=http://localhost:3000
 
-# Optional: override server URL if you want to use LAN IP
-# Example: SERVER_URL=http://192.168.1.100:3000
-# Leave blank to auto-detect
-SERVER_URL=
-
-# Razorpay API keys for paid AAB
-RAZORPAY_KEY_ID=YOUR_RAZORPAY_KEY_ID
-RAZORPAY_KEY_SECRET=YOUR_RAZORPAY_KEY_SECRET
+# Razorpay API keys
+RAZORPAY_KEY_ID=your_razorpay_key_id
+RAZORPAY_KEY_SECRET=your_razorpay_key_secret
