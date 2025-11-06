@@ -1,157 +1,187 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>🌐 Web to App Builder - Fleepzon Softech</title>
-  <style>
-    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f4f7fa; padding: 40px; color: #222; }
-    .container { max-width: 720px; background: white; margin: auto; padding: 30px; border-radius: 15px; box-shadow: 0 6px 25px rgba(0,0,0,0.1); }
-    h2 { text-align: center; color: #007bff; font-weight: 700; }
-    input, select { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ccc; border-radius: 8px; font-size: 15px; }
-    button { width: 100%; padding: 12px; border: none; background: #007bff; color: white; font-size: 16px; border-radius: 8px; cursor: pointer; transition: 0.3s; }
-    button:hover { background: #0056b3; }
-    .btn-success { background: #28a745; }
-    .btn-success:hover { background: #218838; }
-    #result { margin-top: 20px; padding: 15px; border-radius: 10px; display: none; text-align: center; word-break: break-word; font-size: 16px; }
-    a { color: #007bff; font-weight: bold; text-decoration: none; }
-    a:hover { text-decoration: underline; }
-    footer { margin-top: 40px; text-align: center; font-size: 14px; color: #666; }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🌐 Web to App Builder - Fleepzon Softech</title>
+<style>
+body { font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif; background:#f4f7fa; padding:40px; color:#222; }
+.container { max-width:800px; background:white; margin:auto; padding:30px; border-radius:15px; box-shadow:0 6px 25px rgba(0,0,0,0.1); }
+h2 { text-align:center; color:#007bff; font-weight:700; margin-bottom:20px; }
+input,select,button { width:100%; padding:12px; margin:8px 0; border:1px solid #ccc; border-radius:8px; font-size:15px; }
+button { border:none; color:white; font-size:16px; cursor:pointer; transition:0.3s; }
+button:hover { opacity:0.9; }
+.btn-success { background:#28a745; }
+.btn-success:hover { background:#218838; }
+#result { margin-top:20px; padding:15px; border-radius:10px; display:none; text-align:center; word-break:break-word; font-size:16px; }
+#searchResult { margin-top:20px; padding:15px; border-radius:10px; display:none; background:#e9f7ef; }
+footer { margin-top:40px; text-align:center; font-size:14px; color:#666; }
+</style>
 </head>
 <body>
-  <div class="container">
-    <h2>🌐 Convert Your Website to Android App (Free APK)</h2>
 
-    <form id="appForm" enctype="multipart/form-data">
-      <input type="text" name="appName" placeholder="App Name *" required>
-      <input type="text" name="packageName" placeholder="Package Name *" required>
-      <input type="text" name="versionName" placeholder="Version Name *" required>
-      <input type="number" name="versionCode" placeholder="Version Code *" required>
-      <select name="minSdk" required>
-        <option value="">Select Minimum SDK</option>
-        <option value="21">21 (Android 5.0)</option>
-        <option value="29">29 (Android 10)</option>
-        <option value="34">34 (Android 14)</option>
-      </select>
-      <input type="url" name="websiteUrl" placeholder="Website URL *" required>
-      <label>Upload App Icon *</label>
-      <input type="file" name="icon" accept="image/*" required>
-      <label>Upload Splash Screen *</label>
-      <input type="file" name="splash" accept="image/*" required>
-      <input type="email" name="email" placeholder="Email *" required>
+<div class="container">
+<h2>🌐 Web to App Builder</h2>
 
-      <button type="submit" class="btn-success">🚀 Generate Free APK</button>
-    </form>
+<label>Search your app</label>
+<input type="text" id="searchInput" placeholder="Enter App Name or Package Name">
+<button id="searchBtn" class="btn-success">🔍 Search</button>
 
-    <p style="text-align:center;margin:10px 0;">OR</p>
-    <button id="payAAB">💰 Generate Paid AAB (₹6,999)</button>
+<div id="searchResult"></div>
 
-    <div id="result"></div>
-  </div>
+<hr>
 
-  <footer>
-    <p>© 2025 Fleepzon Softech | <a href="mailto:support@fleepzonsoftech.com">Contact Support</a></p>
-  </footer>
+<form id="appForm" enctype="multipart/form-data">
+<input type="text" name="appName" id="appName" placeholder="App Name *" required>
+<input type="text" name="packageName" id="packageName" placeholder="Package Name *" required>
+<input type="text" name="versionName" placeholder="Version Name *" required>
+<input type="number" name="versionCode" placeholder="Version Code *" required>
+<select name="minSdk" required>
+  <option value="">Select Minimum SDK</option>
+  <option value="21">21 (Android 5.0)</option>
+  <option value="29">29 (Android 10)</option>
+  <option value="34">34 (Android 14)</option>
+</select>
+<input type="url" name="websiteUrl" placeholder="Website URL *" required>
+<label>Upload App Icon *</label>
+<input type="file" name="icon" accept="image/*" required>
+<label>Upload Splash Screen *</label>
+<input type="file" name="splash" accept="image/*" required>
+<input type="email" name="email" placeholder="Email *" required>
 
-  <!-- Razorpay checkout -->
-  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
-  <script>
-    // =========================
-    // Auto-detect backend URL
-    // =========================
-    let BACKEND_URL = "";
-    const ua = navigator.userAgent.toLowerCase();
+<button type="submit" class="btn-success">🚀 Generate Free APK</button>
+</form>
 
-    if (ua.includes("android") && window.location.hostname === "localhost") {
-      // Android emulator
-      BACKEND_URL = "http://10.0.2.2:3000";
-    } else if (ua.includes("android") || ua.includes("iphone") || ua.includes("ipad")) {
-      // Real mobile device → replace with your PC LAN IP
-      BACKEND_URL = "http://192.168.1.100:3000"; // <-- CHANGE to your PC LAN IP
+<p style="text-align:center;margin:10px 0;">OR</p>
+<button id="payAAB" class="btn-success">💰 Generate Paid AAB (₹6,999)</button>
+
+<div id="result"></div>
+</div>
+
+<footer>
+<p>© 2025 Fleepzon Softech | <a href="mailto:support@fleepzonsoftech.com">Contact Support</a></p>
+</footer>
+
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script>
+const BACKEND_URL = "https://fleepzonsoftech.sbs"; 
+const searchBtn = document.getElementById("searchBtn");
+const searchInput = document.getElementById("searchInput");
+const searchResult = document.getElementById("searchResult");
+const form = document.getElementById("appForm");
+const resultBox = document.getElementById("result");
+
+let buildExists = false;
+
+// =========================
+// Search App
+// =========================
+searchBtn.addEventListener("click", async () => {
+  const query = searchInput.value.trim();
+  if(!query) return alert("Enter App Name or Package Name to search!");
+  try {
+    const res = await fetch(`${BACKEND_URL}/api/search?query=${encodeURIComponent(query)}`);
+    const data = await res.json();
+    
+    if(data.exists) {
+      buildExists = true;
+      document.getElementById("appName").value = data.app.appName;
+      document.getElementById("packageName").value = data.app.packageName;
+      document.getElementById("appName").readOnly = true;
+      document.getElementById("packageName").readOnly = true;
+      searchResult.style.display = "block";
+      searchResult.innerHTML = `
+        ✅ App Found!<br>
+        Name: <b>${data.app.appName}</b><br>
+        Package: <b>${data.app.packageName}</b><br>
+        Version: <b>${data.app.versionName} (${data.app.versionCode})</b><br>
+        <a href="${BACKEND_URL}${data.app.apkUrl}" target="_blank">⬇ Download APK</a>
+        ${data.app.aabUrl ? `<br><a href="${BACKEND_URL}${data.app.aabUrl}" target="_blank">⬇ Download AAB</a>` : ''}
+      `;
     } else {
-      // PC/laptop
-      BACKEND_URL = `${window.location.protocol}//${window.location.hostname}:3000`;
+      buildExists = false;
+      document.getElementById("appName").readOnly = false;
+      document.getElementById("packageName").readOnly = false;
+      searchResult.style.display = "block";
+      searchResult.innerHTML = "❌ App not available. You can create a new build below.";
     }
+  } catch(err) {
+    console.error(err);
+    alert("⚠️ Connection error. Check backend server URL.");
+  }
+});
 
-    console.log("Using BACKEND_URL:", BACKEND_URL);
+// =========================
+// Free APK build
+// =========================
+form.addEventListener("submit", async e => {
+  e.preventDefault();
+  resultBox.style.display = "block";
+  resultBox.style.background = "#fff3cd";
+  resultBox.style.color = "#856404";
+  resultBox.innerHTML = "⏳ Please wait... Building your APK and sending email...";
+  
+  const formData = new FormData(form);
+  try {
+    const res = await fetch(`${BACKEND_URL}/api/build`, { method: "POST", body: formData });
+    const data = await res.json();
+    if(data.success) {
+      resultBox.style.background = "#e9f7ef";
+      resultBox.style.color = "#155724";
+      resultBox.innerHTML = `✅ Build Success!<br>📧 Download link sent to your email.<br>
+                             <a href="${data.downloadUrl}" target="_blank">⬇ Download APK</a>`;
+    } else {
+      resultBox.style.background = "#f8d7da";
+      resultBox.style.color = "#721c24";
+      resultBox.innerHTML = "❌ Build failed. Try again.";
+    }
+  } catch(err) {
+    console.error(err);
+    resultBox.style.background = "#f8d7da";
+    resultBox.style.color = "#721c24";
+    resultBox.innerHTML = "⚠️ Connection error. Please check your network.";
+  }
+});
 
-    // =========================
-    // Build APK form
-    // =========================
-    const form = document.getElementById("appForm");
-    const resultBox = document.getElementById("result");
-
-    form.addEventListener("submit", async (e) => {
-      e.preventDefault();
-      resultBox.style.display = "block";
-      resultBox.style.background = "#fff3cd";
-      resultBox.style.color = "#856404";
-      resultBox.innerHTML = "⏳ Please wait... Building your APK...";
-
-      const formData = new FormData(form);
-
-      try {
-        const res = await fetch(`${BACKEND_URL}/api/build`, { method: "POST", body: formData });
-        if (!res.ok) throw new Error("Server not responding");
-
-        const data = await res.json();
-        if (data.success) {
-          resultBox.style.background = "#e9f7ef";
-          resultBox.style.color = "#155724";
-          resultBox.innerHTML = `
-            ✅ <b>Success!</b><br>Your APK is ready.<br><br>
-            <a href="${data.downloadUrl}" target="_blank" download>⬇ Download Now</a>
-          `;
-        } else {
-          resultBox.style.background = "#f8d7da";
-          resultBox.style.color = "#721c24";
-          resultBox.innerHTML = "❌ Build failed. Try again.";
-        }
-      } catch (err) {
-        console.error(err);
-        resultBox.style.background = "#f8d7da";
-        resultBox.style.color = "#721c24";
-        resultBox.innerHTML = "⚠️ Connection error. Check backend server URL.";
-      }
+// =========================
+// Paid AAB generation
+// =========================
+document.getElementById("payAAB").addEventListener("click", async () => {
+  const email = form.email.value;
+  const packageName = form.packageName.value;
+  if(!email || !packageName) return alert("Enter email & package name for AAB delivery!");
+  try {
+    const res = await fetch(`${BACKEND_URL}/create-order`, {
+      method:"POST",
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ amount:6999 })
     });
+    const data = await res.json();
+    if(!data.success) throw new Error("Order creation failed");
 
-    // =========================
-    // Paid AAB button
-    // =========================
-    document.getElementById("payAAB").addEventListener("click", async () => {
-      try {
-        const res = await fetch(`${BACKEND_URL}/create-order`, {
-          method: "POST",
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ amount: 6999 })
+    const options = {
+      key: data.key_id,
+      amount: data.order.amount,
+      currency: data.order.currency,
+      name: "Fleepzon Softech",
+      description: "Paid AAB Generation",
+      order_id: data.order.id,
+      handler: async function(response) {
+        const verifyRes = await fetch(`${BACKEND_URL}/verify-payment`, {
+          method:"POST",
+          headers:{'Content-Type':'application/json'},
+          body: JSON.stringify({ ...response, email, packageName })
         });
-        const data = await res.json();
-        if (!data.success) throw new Error("Order creation failed");
-
-        const options = {
-          key: data.key_id,
-          amount: data.order.amount,
-          currency: data.order.currency,
-          name: "Fleepzon Softech",
-          description: "Paid AAB Generation",
-          order_id: data.order.id,
-          handler: async function(response) {
-            const verifyRes = await fetch(`${BACKEND_URL}/verify-payment`, {
-              method: "POST",
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify(response)
-            });
-            const verifyData = await verifyRes.json();
-            alert(verifyData.message);
-          }
-        };
-        new Razorpay(options).open();
-      } catch (err) {
-        console.error(err);
-        alert("⚠️ Connection error. Check backend server URL.");
+        const verifyData = await verifyRes.json();
+        alert(verifyData.message);
       }
-    });
-  </script>
+    };
+    new Razorpay(options).open();
+  } catch(err) {
+    console.error(err);
+    alert("⚠️ Connection error. Check backend server URL.");
+  }
+});
+</script>
 </body>
 </html>
