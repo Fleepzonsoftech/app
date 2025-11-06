@@ -1,7 +1,11 @@
+# Server port
 PORT=3000
 
-# Optional: override auto-detected IP (otherwise server detects your LAN IP)
-# SERVER_URL=http://192.168.1.100:3000
+# Optional: override server URL if you want to use LAN IP
+# Example: SERVER_URL=http://192.168.1.100:3000
+# Leave blank to auto-detect
+SERVER_URL=
 
+# Razorpay API keys for paid AAB
 RAZORPAY_KEY_ID=YOUR_RAZORPAY_KEY_ID
 RAZORPAY_KEY_SECRET=YOUR_RAZORPAY_KEY_SECRET
