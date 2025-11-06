@@ -47,7 +47,14 @@
       color: #155724;
       display: none;
       text-align: center;
+      word-break: break-word;
     }
+    a {
+      color: #007bff;
+      font-weight: bold;
+      text-decoration: none;
+    }
+    a:hover { text-decoration: underline; }
   </style>
 </head>
 <body>
@@ -56,7 +63,7 @@
 
     <form id="appForm" enctype="multipart/form-data">
       <input type="text" name="appName" placeholder="App Name *" required>
-      <input type="text" name="packageName" placeholder="Package Name *" required>
+      <input type="text" name="packageName" placeholder="Package Name (e.g., com.myapp.app) *" required>
       <input type="text" name="versionName" placeholder="Version Name *" required>
       <input type="number" name="versionCode" placeholder="Version Code *" required>
       <select name="minSdk" required>
@@ -81,7 +88,7 @@
 
   <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
   <script>
-    // 🌍 Backend URL (Change this if your backend is hosted remotely)
+    // 🌍 Backend URL (Change this when hosting)
     const BACKEND_URL = "http://localhost:5000";
 
     const form = document.getElementById("appForm");
@@ -94,15 +101,20 @@
       resultBox.innerHTML = "⏳ Generating APK...";
 
       const formData = new FormData(form);
-      formData.append("generateType", "apk");
 
       try {
-        const res = await fetch(`${BACKEND_URL}/api/submit`, { method: "POST", body: formData });
+        const res = await fetch(`${BACKEND_URL}/api/build`, {
+          method: "POST",
+          body: formData,
+        });
+
+        if (!res.ok) throw new Error("Server not responding");
+
         const data = await res.json();
 
         if (data.success) {
           resultBox.innerHTML = `
-            ✅ Your APK is ready! <br>
+            ✅ Your APK is ready! <br><br>
             <a href="${data.downloadUrl}" target="_blank" download>⬇ Download Now</a>
           `;
         } else {
@@ -114,41 +126,10 @@
       }
     });
 
-    // ✅ Paid AAB Generation with Razorpay
-    document.getElementById("payAAB").addEventListener("click", async () => {
-      try {
-        const orderRes = await fetch(`${BACKEND_URL}/api/create-order`, { method: "POST" });
-        const { order } = await orderRes.json();
-
-        const options = {
-          key: "rzp_test_1234567890",
-          amount: order.amount,
-          currency: "INR",
-          name: "Web to App Builder",
-          description: "AAB Generation Fee",
-          order_id: order.id,
-          handler: async function () {
-            const formData = new FormData(form);
-            formData.append("generateType", "aab");
-            const res = await fetch(`${BACKEND_URL}/api/submit`, { method: "POST", body: formData });
-            const data = await res.json();
-            if (data.success) {
-              resultBox.style.display = "block";
-              resultBox.innerHTML = `
-                ✅ Your AAB is ready! <br>
-                <a href="${data.downloadUrl}" target="_blank" download>⬇ Download Now</a>
-              `;
-            }
-          },
-          theme: { color: "#007bff" }
-        };
-
-        new Razorpay(options).open();
-      } catch (err) {
-        console.error("❌ Razorpay Error:", err);
-      }
+    // ✅ Paid AAB Generation (to implement later)
+    document.getElementById("payAAB").addEventListener("click", () => {
+      alert("⚠️ Paid AAB generation will be available soon!");
     });
   </script>
 </body>
 </html>
-
