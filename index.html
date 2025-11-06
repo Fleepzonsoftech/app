@@ -3,28 +3,34 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>🌐 Web to App Builder</title>
+  <title>🌐 Web to App Builder - Fleepzon Softech</title>
   <style>
     body {
-      font-family: Arial, sans-serif;
-      background: #f5f8fa;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #f4f7fa;
       padding: 40px;
       color: #222;
     }
     .container {
-      max-width: 700px;
+      max-width: 720px;
       background: white;
       margin: auto;
       padding: 30px;
-      border-radius: 10px;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+      border-radius: 15px;
+      box-shadow: 0 6px 25px rgba(0,0,0,0.1);
+    }
+    h2 {
+      text-align: center;
+      color: #007bff;
+      font-weight: 700;
     }
     input, select {
       width: 100%;
-      padding: 10px;
-      margin: 8px 0;
+      padding: 12px;
+      margin: 10px 0;
       border: 1px solid #ccc;
       border-radius: 8px;
+      font-size: 15px;
     }
     button {
       width: 100%;
@@ -35,6 +41,7 @@
       font-size: 16px;
       border-radius: 8px;
       cursor: pointer;
+      transition: 0.3s;
     }
     button:hover { background: #0056b3; }
     .btn-success { background: #28a745; }
@@ -48,6 +55,7 @@
       display: none;
       text-align: center;
       word-break: break-word;
+      font-size: 16px;
     }
     a {
       color: #007bff;
@@ -55,11 +63,17 @@
       text-decoration: none;
     }
     a:hover { text-decoration: underline; }
+    footer {
+      margin-top: 40px;
+      text-align: center;
+      font-size: 14px;
+      color: #666;
+    }
   </style>
 </head>
 <body>
   <div class="container">
-    <h2 style="text-align:center;">🌐 Convert Your Website to App for FREE</h2>
+    <h2>🌐 Convert Your Website to Android App (Free APK)</h2>
 
     <form id="appForm" enctype="multipart/form-data">
       <input type="text" name="appName" placeholder="App Name *" required>
@@ -67,29 +81,34 @@
       <input type="text" name="versionName" placeholder="Version Name *" required>
       <input type="number" name="versionCode" placeholder="Version Code *" required>
       <select name="minSdk" required>
-        <option value="">Select minSdk</option>
-        <option value="21">21</option>
-        <option value="29">29</option>
+        <option value="">Select Minimum SDK</option>
+        <option value="21">21 (Android 5.0)</option>
+        <option value="29">29 (Android 10)</option>
         <option value="34">34 (Android 14)</option>
       </select>
-      <input type="url" name="websiteUrl" placeholder="Website URL *" required>
+      <input type="url" name="websiteUrl" placeholder="Website URL (https://example.com) *" required>
+      <label>Upload App Icon *</label>
       <input type="file" name="icon" accept="image/*" required>
+      <label>Upload Splash Screen *</label>
       <input type="file" name="splash" accept="image/*" required>
       <input type="email" name="email" placeholder="Email *" required>
 
-      <button type="submit" class="btn-success">Generate Free APK</button>
+      <button type="submit" class="btn-success">🚀 Generate Free APK</button>
     </form>
 
     <p style="text-align:center;margin:10px 0;">OR</p>
-    <button id="payAAB">Generate AAB (₹6,999)</button>
+    <button id="payAAB">💰 Generate AAB (₹6,999)</button>
 
     <div id="result"></div>
   </div>
 
-  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+  <footer>
+    <p>© 2025 Fleepzon Softech | <a href="mailto:support@fleepzonsoftech.com">Contact Support</a></p>
+  </footer>
+
   <script>
-    // 🌍 Backend URL (Change this when hosting)
-    const BACKEND_URL = "http://localhost:5000";
+    // 🌍 Backend URL — Change this after deploying your Node.js server
+    const BACKEND_URL = "https://fleepzon-builder.onrender.com";
 
     const form = document.getElementById("appForm");
     const resultBox = document.getElementById("result");
@@ -98,7 +117,9 @@
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
       resultBox.style.display = "block";
-      resultBox.innerHTML = "⏳ Generating APK...";
+      resultBox.style.background = "#fff3cd";
+      resultBox.style.color = "#856404";
+      resultBox.innerHTML = "⏳ Please wait... Building your APK...";
 
       const formData = new FormData(form);
 
@@ -113,23 +134,30 @@
         const data = await res.json();
 
         if (data.success) {
+          resultBox.style.background = "#e9f7ef";
+          resultBox.style.color = "#155724";
           resultBox.innerHTML = `
-            ✅ Your APK is ready! <br><br>
+            ✅ <b>Success!</b><br>Your APK is ready.<br><br>
             <a href="${data.downloadUrl}" target="_blank" download>⬇ Download Now</a>
           `;
         } else {
+          resultBox.style.background = "#f8d7da";
+          resultBox.style.color = "#721c24";
           resultBox.innerHTML = "❌ Build failed. Try again.";
         }
       } catch (error) {
         console.error("❌ Error:", error);
-        resultBox.innerHTML = "⚠️ Connection error. Check backend server.";
+        resultBox.style.background = "#f8d7da";
+        resultBox.style.color = "#721c24";
+        resultBox.innerHTML = "⚠️ Connection error. Check backend server URL.";
       }
     });
 
-    // ✅ Paid AAB Generation (to implement later)
+    // ✅ Paid AAB Generation (Future Feature)
     document.getElementById("payAAB").addEventListener("click", () => {
-      alert("⚠️ Paid AAB generation will be available soon!");
+      alert("💳 Paid AAB generation will be available soon!");
     });
   </script>
 </body>
 </html>
+
