@@ -39,9 +39,9 @@ footer { margin-top:40px; text-align:center; font-size:14px; color:#666; }
 
 <form id="appForm" enctype="multipart/form-data">
 <input type="text" name="appName" id="appName" placeholder="App Name *" required>
-<input type="text" name="packageName" id="packageName" placeholder="Package Name *" required>
-<input type="text" name="versionName" placeholder="Version Name *" required>
-<input type="number" name="versionCode" placeholder="Version Code *" required>
+<input type="text" name="packageName" id="packageName" placeholder="Package Name:com.example.app *" required>
+<input type="text" name="versionName" placeholder="Version Name: 0.0.0.1*" required>
+<input type="number" name="versionCode" placeholder="Version Code:01 *" required>
 <select name="minSdk" required>
   <option value="">Select Minimum SDK</option>
   <option value="21">21 (Android 5.0)</option>
@@ -191,4 +191,5 @@ document.getElementById("payAAB").addEventListener("click", async () => {
 </script>
 </body>
 </html>
+
 
