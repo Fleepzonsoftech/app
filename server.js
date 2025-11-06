@@ -114,18 +114,49 @@ app.post("/create-order", async (req, res) => {
   res.json({ success: true, order, key_id: process.env.RAZORPAY_KEY_ID });
 });
 
+// =========================
+// Verify Payment + Generate AAB per Package
+// =========================
 app.post("/verify-payment", async (req, res) => {
   try {
-    const { razorpay_payment_id, razorpay_order_id, razorpay_signature, email } = req.body;
+    const { razorpay_payment_id, razorpay_order_id, razorpay_signature, email, packageName } = req.body;
 
-    // Simulate AAB build
-    const aabFileName = `app-${Date.now()}.aab`;
+    if (!packageName || !email) return res.json({ success: false, message: "Missing package or email" });
+
+    // Read builds.json
+    const builds = await fs.readJSON(BUILDS_FILE);
+
+    // Check if app exists
+    let appIndex = builds.findIndex(b => b.packageName === packageName);
+    let appData;
+    if (appIndex >= 0) {
+      appData = builds[appIndex]; // update existing
+    } else {
+      // If new build, create dummy app info
+      appData = {
+        appName: packageName,
+        packageName,
+        versionName: "1.0",
+        versionCode: 1,
+        minSdk: 21,
+        websiteUrl: "",
+        apkUrl: "",
+        aabUrl: "",
+        createdAt: new Date().toISOString()
+      };
+      builds.push(appData);
+      appIndex = builds.length - 1;
+    }
+
+    // Generate new AAB file
+    const aabFileName = `${packageName}-${Date.now()}.aab`;
     const aabPath = path.join(__dirname, "public", "builds", aabFileName);
+    fs.ensureDirSync(path.dirname(aabPath));
     fs.writeFileSync(aabPath, "Dummy AAB content");
 
-    // Update builds.json with AAB
-    const builds = await fs.readJSON(BUILDS_FILE);
-    if (builds.length > 0) builds[builds.length-1].aabUrl = `/builds/${aabFileName}`;
+    // Update builds.json
+    builds[appIndex].aabUrl = `/builds/${aabFileName}`;
+    builds[appIndex].createdAt = new Date().toISOString();
     await fs.writeJSON(BUILDS_FILE, builds, { spaces: 2 });
 
     // Send email
@@ -133,12 +164,12 @@ app.post("/verify-payment", async (req, res) => {
     await transporter.sendMail({
       from: process.env.EMAIL_USER,
       to: email,
-      subject: `Your Paid AAB is ready`,
-      html: `<p>Your AAB has been built successfully!</p>
+      subject: `Your Paid AAB for ${packageName} is ready`,
+      html: `<p>Your AAB has been generated successfully!</p>
              <p><a href="${downloadLink}">⬇ Download AAB</a></p>`,
     });
 
-    res.json({ success: true, message: "Payment verified! AAB will be sent to your email." });
+    res.json({ success: true, message: "✅ Payment verified! AAB has been generated and emailed." });
   } catch (err) {
     console.error(err);
     res.json({ success: false, message: err.message });
@@ -150,4 +181,3 @@ app.post("/verify-payment", async (req, res) => {
 // =========================
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
-
