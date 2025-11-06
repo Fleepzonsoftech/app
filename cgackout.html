@@ -5,51 +5,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>💰 Checkout - Paid AAB</title>
 <style>
-body {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background: #f4f7fa;
-  margin: 0;
-  padding: 0;
-}
-.container {
-  max-width: 500px;
-  background: #fff;
-  margin: 80px auto;
-  padding: 30px;
-  border-radius: 15px;
-  box-shadow: 0 6px 25px rgba(0,0,0,0.1);
-  text-align: center;
-}
-h2 {
-  color: #007bff;
-  margin-bottom: 20px;
-}
-input, button {
-  width: 100%;
-  padding: 12px;
-  margin: 10px 0;
-  border-radius: 8px;
-  border: 1px solid #ccc;
-  font-size: 16px;
-}
-button {
-  background: #28a745;
-  color: #fff;
-  font-size: 18px;
-  cursor: pointer;
-  border: none;
-  transition: 0.3s;
-}
-button:hover {
-  opacity: 0.9;
-}
-#status {
-  margin-top: 20px;
-  padding: 15px;
-  border-radius: 10px;
-  display: none;
-  font-size: 16px;
-}
+body { font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif; background:#f4f7fa; margin:0; padding:0; }
+.container { max-width:500px; background:#fff; margin:80px auto; padding:30px; border-radius:15px; box-shadow:0 6px 25px rgba(0,0,0,0.1); text-align:center; }
+h2 { color:#007bff; margin-bottom:20px; }
+input,button { width:100%; padding:12px; margin:10px 0; border-radius:8px; border:1px solid #ccc; font-size:16px; }
+button { background:#28a745; color:#fff; font-size:18px; cursor:pointer; border:none; transition:0.3s; }
+button:hover { opacity:0.9; }
+#status { margin-top:20px; padding:15px; border-radius:10px; display:none; font-size:16px; }
 </style>
 </head>
 <body>
@@ -68,35 +30,32 @@ button:hover {
 
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 <script>
-const BACKEND_URL = "https://fleepzonsoftech.sbs";
 const form = document.getElementById("checkoutForm");
 const statusBox = document.getElementById("status");
 
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
-
   const email = document.getElementById("email").value.trim();
   const packageName = document.getElementById("packageName").value.trim();
 
-  if(!email || !packageName) {
-    alert("Please enter both Email and Package Name!");
-    return;
-  }
+  if(!email || !packageName) { alert("Enter both Email and Package Name"); return; }
 
-  statusBox.style.display = "block";
-  statusBox.style.background = "#fff3cd";
-  statusBox.style.color = "#856404";
-  statusBox.innerHTML = "⏳ Creating order, please wait...";
+  statusBox.style.display="block";
+  statusBox.style.background="#fff3cd";
+  statusBox.style.color="#856404";
+  statusBox.innerHTML="⏳ Creating order...";
 
   try {
-    const res = await fetch(`${BACKEND_URL}/create-order`, {
-      method: "POST",
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({ amount: 6999 })
+    // 1️⃣ Create Razorpay Order
+    const res = await fetch('https://fleepzonsoftech.sbs/create_order.php', {
+      method:"POST",
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ amount:6999 })
     });
     const data = await res.json();
-    if(!data.success) throw new Error("Order creation failed");
+    if(!data.success) throw new Error(data.message || "Order creation failed");
 
+    // 2️⃣ Open Razorpay Checkout
     const options = {
       key: data.key_id,
       amount: data.order.amount,
@@ -105,44 +64,41 @@ form.addEventListener("submit", async (e) => {
       description: "Paid AAB Generation",
       order_id: data.order.id,
       handler: async function(response) {
-        statusBox.style.background = "#fff3cd";
-        statusBox.style.color = "#856404";
-        statusBox.innerHTML = "⏳ Verifying payment and building AAB...";
-
+        statusBox.innerHTML="⏳ Verifying payment...";
         try {
-          const verifyRes = await fetch(`${BACKEND_URL}/verify-payment.php`, {
-            method: "POST",
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({...response, email, packageName})
+          // 3️⃣ Verify Payment
+          const verifyRes = await fetch('https://fleepzonsoftech.sbs/verify_payment.php', {
+            method:"POST",
+            headers: {'Content-Type':'application/json'},
+            body: JSON.stringify({ ...response, email, packageName })
           });
           const verifyData = await verifyRes.json();
           if(verifyData.success) {
-            statusBox.style.background = "#e9f7ef";
-            statusBox.style.color = "#155724";
-            statusBox.innerHTML = `✅ ${verifyData.message}`;
+            statusBox.style.background="#e9f7ef";
+            statusBox.style.color="#155724";
+            statusBox.innerHTML=`✅ ${verifyData.message}`;
           } else {
-            statusBox.style.background = "#f8d7da";
-            statusBox.style.color = "#721c24";
-            statusBox.innerHTML = `❌ ${verifyData.message}`;
+            statusBox.style.background="#f8d7da";
+            statusBox.style.color="#721c24";
+            statusBox.innerHTML=`❌ ${verifyData.message}`;
           }
         } catch(err) {
           console.error(err);
-          statusBox.style.background = "#f8d7da";
-          statusBox.style.color = "#721c24";
-          statusBox.innerHTML = "⚠️ Verification failed. Try again.";
+          statusBox.style.background="#f8d7da";
+          statusBox.style.color="#721c24";
+          statusBox.innerHTML="⚠️ Payment verification failed.";
         }
       },
       prefill: { email },
-      theme: { color: "#007bff" }
+      theme: { color:"#007bff" }
     };
-
     new Razorpay(options).open();
 
   } catch(err) {
     console.error(err);
-    statusBox.style.background = "#f8d7da";
-    statusBox.style.color = "#721c24";
-    statusBox.innerHTML = "⚠️ Connection error. Check backend server URL.";
+    statusBox.style.background="#f8d7da";
+    statusBox.style.color="#721c24";
+    statusBox.innerHTML="⚠️ Connection error. Check backend.";
   }
 });
 </script>
