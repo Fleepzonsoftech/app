@@ -1,7 +1,37 @@
-# Server configuration
 PORT=3000
-SERVER_URL=http://localhost:3000
 
-# Razorpay API keys
+EMAIL_USER=your-email@gmail.com
+EMAIL_PASS=your-email-password-or-app-password
+
+RAZORPAY_KEY_ID=your_razorpay_key_id
+RAZORPAY_KEY_SECRET=your_razorpay_key_secret  vs  # =========================
+# Server
+# =========================
+PORT=443                # HTTPS port (443) or 3000 for local testing
+BASE_URL=https://fleepzonsoftech.sbs
+
+# =========================
+# Gmail / Nodemailer
+# =========================
+EMAIL_USER=your-email@gmail.com        # Gmail address used to send emails
+EMAIL_PASS=your-gmail-app-password    # App password if 2FA is enabled
+
+# =========================
+# Razorpay API Keys
+# =========================
 RAZORPAY_KEY_ID=your_razorpay_key_id
 RAZORPAY_KEY_SECRET=your_razorpay_key_secret
+
+# =========================
+# Paths / Directories (Optional)
+# =========================
+UPLOAD_DIR=uploads
+BUILD_DIR=builds
+PUBLIC_DIR=public
+
+# =========================
+# App Settings (Optional)
+# =========================
+DEFAULT_MIN_SDK=21
+FREE_APK_ENABLED=true
+PAID_AAB_PRICE=6999
