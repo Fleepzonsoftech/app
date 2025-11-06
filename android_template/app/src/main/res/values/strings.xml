@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- App name (this will be replaced dynamically) -->
+    <string name="app_name">MyApp</string>
+
+    <!-- Default strings -->
+    <string name="hello_world">Hello World!</string>
+    <string name="action_settings">Settings</string>
+    <string name="app_description">This is a web-to-app generated application.</string>
+
+    <!-- Common messages -->
+    <string name="loading">Loading...</string>
+    <string name="error">Something went wrong!</string>
+    <string name="retry">Retry</string>
+</resources>
