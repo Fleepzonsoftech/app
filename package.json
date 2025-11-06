@@ -1,7 +1,7 @@
 {
-  "name": "web-to-app-builder",
+  "name": "fleepzon-builder",
   "version": "1.0.0",
-  "description": "A backend and frontend tool to convert websites into Android apps with file upload, Razorpay payment, and email notification support.",
+  "description": "🌐 Fleepzon Softech Web-to-App Builder Backend - Generate Android APK and AAB from Websites",
   "main": "server.js",
   "type": "module",
   "scripts": {
@@ -10,62 +10,25 @@
   },
   "dependencies": {
     "cors": "^2.8.5",
-    "dotenv": "^16.3.1",
+    "dotenv": "^16.4.5",
     "express": "^4.19.2",
     "fs-extra": "^11.2.0",
     "multer": "^1.4.5-lts.1",
-    "nodemailer": "^6.9.13",
-    "razorpay": "^2.9.4"
+    "path": "^0.12.7"
   },
   "devDependencies": {
     "nodemon": "^3.1.0"
   },
+  "engines": {
+    "node": ">=18.0.0"
+  },
   "keywords": [
     "web-to-app",
-    "express",
-    "razorpay",
-    "multer",
-    "nodemailer",
-    "api",
-    "android-builder",
-    "file-upload",
-    "backend"
+    "apk-builder",
+    "android-app-generator",
+    "express-backend",
+    "fleepzon-softech"
   ],
-  "author": "App Builder",
-  "license": "MIT",
-  "examples": {
-    "checkVersion": {
-      "exists": true,
-      "versionName": "1.0.1",
-      "versionCode": 2
-    },
-    "noVersion": {
-      "exists": false
-    },
-    "buildSuccess": {
-      "success": true,
-      "message": "🎉 MyApp created successfully!",
-      "downloadUrl": "http://localhost:5000/uploads/builds/com.myapp.apk"
-    },
-    "buildWithLinks": {
-      "success": true,
-      "data": {
-        "appName": "Example App",
-        "packageName": "com.example"
-      },
-      "apkLink": "http://localhost:5000/uploads/builds/com.example.apk",
-      "aabLink": "http://localhost:5000/uploads/builds/com.example.aab"
-    },
-    "razorpayPaymentData": {
-      "packageName": "com.myapp",
-      "razorpay_order_id": "order_J7zM...",
-      "razorpay_payment_id": "pay_J7zN...",
-      "razorpay_signature": "generated_signature"
-    },
-    "paymentVerified": {
-      "success": true,
-      "message": "✅ Payment verified & AAB generated!",
-      "downloadAAB": "http://localhost:5000/uploads/builds/com.myapp.aab"
-    }
-  }
+  "author": "Fleepzon Softech",
+  "license": "MIT"
 }
