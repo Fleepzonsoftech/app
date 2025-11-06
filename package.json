@@ -1,7 +1,7 @@
 {
   "name": "fleepzon-builder",
   "version": "1.0.0",
-  "description": "🌐 Fleepzon Softech Web-to-App Builder Backend - Generate Android APK and AAB from Websites",
+  "description": "🌐 Fleepzon Softech Web-to-App Builder Backend - Generate Android APK and AAB",
   "main": "server.js",
   "type": "module",
   "scripts": {
@@ -32,3 +32,5 @@
   "author": "Fleepzon Softech",
   "license": "MIT"
 }
+
+
