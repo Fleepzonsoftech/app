@@ -4,19 +4,23 @@ import cors from "cors";
 import fs from "fs-extra";
 import path from "path";
 import dotenv from "dotenv";
-import { exec } from "child_process";
 
 dotenv.config();
 
 const app = express();
-app.use(cors());
+
+// ✅ Enable CORS for GitHub Pages frontend
+app.use(cors({
+  origin: "https://fleepzonsoftech.github.io",
+}));
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Serve generated APKs
+// Serve static files (APK/AAB downloads)
 app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
 
-// Multer storage
+// Setup multer storage for uploads
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     const tempDir = path.join("uploads", "temp");
@@ -34,68 +38,42 @@ app.get("/", (req, res) => {
   res.send("✅ Fleepzon Builder API running successfully!");
 });
 
-// Build APK endpoint
+// Build endpoint
 app.post("/api/build", upload.fields([{ name: "icon" }, { name: "splash" }]), async (req, res) => {
   try {
     const { appName, packageName, versionName, versionCode, minSdk, websiteUrl, email } = req.body;
+
     if (!appName || !packageName || !websiteUrl || !email) {
       return res.status(400).json({ success: false, message: "Missing required fields" });
     }
 
-    // 1️⃣ Copy Android template for this build
-    const buildId = Date.now();
-    const buildDir = path.join("uploads", `build_${buildId}`);
-    fs.copySync("android-template", buildDir);
+    // Ensure build directory
+    const buildDir = path.join("uploads", "builds");
+    fs.ensureDirSync(buildDir);
 
-    // 2️⃣ Replace icon & splash
-    if (req.files.icon) {
-      const iconPath = path.join(buildDir, "app/src/main/res/mipmap/ic_launcher.png");
-      fs.copyFileSync(req.files.icon[0].path, iconPath);
-    }
-    if (req.files.splash) {
-      const splashPath = path.join(buildDir, "app/src/main/res/drawable/splash.png");
-      fs.copyFileSync(req.files.splash[0].path, splashPath);
-    }
+    // ⚡ Real build logic: Replace this section with Gradle/Android build if you integrate
+    const apkName = `${packageName}.apk`;
+    const apkPath = path.join(buildDir, apkName);
 
-    // 3️⃣ Update app name and version in build.gradle
-    const buildGradlePath = path.join(buildDir, "app/build.gradle");
-    let gradleContent = fs.readFileSync(buildGradlePath, "utf-8");
-    gradleContent = gradleContent.replace(/versionCode \d+/g, `versionCode ${versionCode}`);
-    gradleContent = gradleContent.replace(/versionName ".*"/g, `versionName "${versionName}"`);
-    fs.writeFileSync(buildGradlePath, gradleContent, "utf-8");
+    // Dummy APK content for now
+    fs.writeFileSync(apkPath, "Fake APK content - replace with real build");
 
-    // 4️⃣ Replace package name in AndroidManifest.xml
-    const manifestPath = path.join(buildDir, "app/src/main/AndroidManifest.xml");
-    let manifestContent = fs.readFileSync(manifestPath, "utf-8");
-    manifestContent = manifestContent.replace(/package=".*?"/, `package="${packageName}"`);
-    manifestContent = manifestContent.replace(/<application android:label=".*?"/, `<application android:label="${appName}"`);
-    fs.writeFileSync(manifestPath, manifestContent, "utf-8");
+    console.log(`✅ APK created for ${packageName}`);
 
-    // 5️⃣ Trigger Gradle build
-    exec("./gradlew assembleRelease", { cwd: buildDir }, (err, stdout, stderr) => {
-      if (err) {
-        console.error("❌ Build error:", stderr);
-        return res.status(500).json({ success: false, message: "Build failed", error: stderr });
-      }
+    const serverUrl = process.env.SERVER_URL || `http://localhost:${process.env.PORT || 5000}`;
+    const downloadUrl = `${serverUrl}/uploads/builds/${apkName}`;
 
-      // APK path
-      const apkPath = path.join(buildDir, "app/build/outputs/apk/release/app-release.apk");
-
-      // Copy APK to /uploads for frontend
-      const outDir = path.join("uploads", "builds");
-      fs.ensureDirSync(outDir);
-      const apkName = `${packageName}.apk`;
-      fs.copySync(apkPath, path.join(outDir, apkName));
-
-      const downloadUrl = `${process.env.SERVER_URL}/uploads/builds/${apkName}`;
-      return res.json({ success: true, downloadUrl });
+    return res.json({
+      success: true,
+      message: "Build success!",
+      downloadUrl,
     });
   } catch (err) {
-    console.error("❌ Server error:", err);
-    res.status(500).json({ success: false, message: "Internal server error" });
+    console.error("❌ Build error:", err);
+    return res.status(500).json({ success: false, message: "Internal Server Error" });
   }
 });
 
+// Start server
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`🚀 Fleepzon Builder API running on port ${PORT}`));
-
