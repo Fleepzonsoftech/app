@@ -30,7 +30,9 @@ const razorpay = new Razorpay({
   key_secret: process.env.RAZORPAY_KEY_SECRET
 });
 
+// =========================
 // Search API
+// =========================
 app.get("/api/search", async (req,res)=>{
   const query = req.query.query?.toLowerCase();
   if(!query) return res.json({exists:false});
@@ -40,7 +42,9 @@ app.get("/api/search", async (req,res)=>{
   res.json({exists:false});
 });
 
-// Build Free APK
+// =========================
+// Free APK build
+// =========================
 app.post("/api/build", upload.fields([{name:"icon"},{name:"splash"}]), async (req,res)=>{
   try {
     const {appName,packageName,versionName,versionCode,minSdk,websiteUrl,email} = req.body;
@@ -88,7 +92,9 @@ app.post("/api/build", upload.fields([{name:"icon"},{name:"splash"}]), async (re
   } catch(err){ console.error(err); res.json({success:false,message:err.message}); }
 });
 
+// =========================
 // Paid AAB build
+// =========================
 app.post("/create-order", async(req,res)=>{
   const {amount}=req.body;
   const order = await razorpay.orders.create({amount:amount*100,currency:"INR",payment_capture:1});
@@ -124,4 +130,10 @@ app.post("/verify-payment", async(req,res)=>{
   } catch(err){ console.error(err); res.json({success:false,message:err.message}); }
 });
 
-app.listen(process.env.PORT||3000,()=>console.log("Server running"));
+// =========================
+// Start server
+// =========================
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`🚀 Server running on http://localhost:${PORT}`);
+});
