@@ -1,6 +1,16 @@
+# Server Port
 PORT=5000
+
+# MongoDB connection string (for saving app submissions, optional)
 MONGO_URI=mongodb://127.0.0.1:27017/webtoapp
+
+# Email credentials (for sending APK/AAB links to users)
 EMAIL_USER=your@gmail.com
 EMAIL_PASS=yourapppassword
+
+# Razorpay API (for paid AAB feature)
 RAZORPAY_KEY_ID=rzp_test_123
 RAZORPAY_KEY_SECRET=xyz456
+
+# Your live server URL (important for frontend to download APK)
+SERVER_URL=https://fleepzon-builder.onrender.com
