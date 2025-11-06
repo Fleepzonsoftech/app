@@ -1,68 +1,74 @@
-// ✅ server.js — ES Module version (works with "type": "module")
-
 import express from "express";
-import cors from "cors";
-import dotenv from "dotenv";
-import fs from "fs-extra";
 import multer from "multer";
+import cors from "cors";
+import fs from "fs-extra";
 import path from "path";
-import { fileURLToPath } from "url";
+import dotenv from "dotenv";
 
 dotenv.config();
-
 const app = express();
-const PORT = process.env.PORT || 5000;
-
-// Fix __dirname/__filename for ES Modules
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-// Middleware
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Serve static files
-app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+// 📁 Static file hosting for generated APKs
+app.use("/uploads", express.static("uploads"));
 
-// Multer for uploads
+// 🗂️ Setup file storage for icons & splash uploads
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    const folder = path.join(__dirname, "uploads/icons");
-    fs.ensureDirSync(folder);
-    cb(null, folder);
+    const dest = "uploads/temp";
+    fs.ensureDirSync(dest);
+    cb(null, dest);
   },
   filename: (req, file, cb) => {
-    cb(null, Date.now() + "-" + file.originalname);
+    cb(null, Date.now() + "_" + file.originalname);
   },
 });
 const upload = multer({ storage });
 
-// Test route
+// 🧱 Root endpoint
 app.get("/", (req, res) => {
-  res.send("✅ Backend running fine on port " + PORT);
+  res.send("✅ Fleepzon Builder API running successfully!");
 });
 
-// Build route
-app.post("/api/build", upload.single("icon"), async (req, res) => {
+// 🧩 Handle app build
+app.post("/api/build", upload.fields([{ name: "icon" }, { name: "splash" }]), async (req, res) => {
   try {
-    const { appName, packageName } = req.body;
-    const folder = path.join(__dirname, "uploads/builds");
-    fs.ensureDirSync(folder);
+    const { appName, packageName, versionName, versionCode, minSdk, websiteUrl, email } = req.body;
 
-    const apkPath = path.join(folder, `${packageName}.apk`);
-    fs.writeFileSync(apkPath, "Dummy APK File");
+    if (!appName || !packageName || !websiteUrl || !email) {
+      return res.status(400).json({ success: false, message: "Missing required fields" });
+    }
 
-    res.json({
+    // 💾 Ensure build output directory
+    const buildDir = path.join("uploads", "builds");
+    fs.ensureDirSync(buildDir);
+
+    // 📦 Simulate build process (you can replace this with Gradle command)
+    const apkName = `${packageName}.apk`;
+    const apkPath = path.join(buildDir, apkName);
+
+    // Create dummy APK file
+    fs.writeFileSync(apkPath, "Fake APK file content - Replace with real build output");
+
+    console.log(`✅ Build created for ${packageName}`);
+
+    // 🧾 Respond with download link
+    const serverUrl = process.env.SERVER_URL || "http://localhost:5000";
+    const downloadUrl = `${serverUrl}/uploads/builds/${apkName}`;
+
+    return res.json({
       success: true,
-      message: `🎉 ${appName} created successfully!`,
-      downloadUrl: `http://localhost:${PORT}/uploads/builds/${packageName}.apk`,
+      message: "Build success!",
+      downloadUrl,
     });
-  } catch (error) {
-    console.error("❌ Build Error:", error);
-    res.status(500).json({ success: false, message: "Build failed" });
+  } catch (err) {
+    console.error("❌ Build error:", err);
+    res.status(500).json({ success: false, message: "Internal Server Error" });
   }
 });
 
-// Start server
-app.listen(PORT, () => console.log(`🚀 Server running at http://localhost:${PORT}`));
+// ⚙️ Start server
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => console.log(`🚀 Fleepzon Builder running on port ${PORT}`));
