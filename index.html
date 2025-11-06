@@ -53,7 +53,7 @@ footer { margin-top:40px; text-align:center; font-size:14px; color:#666; }
 </form>
 
 <p style="text-align:center;margin:10px 0;">OR</p>
-<button id="payAAB">💰 Generate Paid AAB (₹6,999)</button>
+<button id="payAAB" class="btn-success">💰 Generate Paid AAB (₹6,999)</button>
 
 <div id="result"></div>
 </div>
@@ -64,7 +64,7 @@ footer { margin-top:40px; text-align:center; font-size:14px; color:#666; }
 
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 <script>
-const BACKEND_URL = "https://fleepzonsoftech.sbs"; // Replace with your server URL
+const BACKEND_URL = "https://fleepzonsoftech.sbs"; 
 const searchBtn = document.getElementById("searchBtn");
 const searchInput = document.getElementById("searchInput");
 const searchResult = document.getElementById("searchResult");
@@ -95,8 +95,8 @@ searchBtn.addEventListener("click", async () => {
         Name: <b>${data.app.appName}</b><br>
         Package: <b>${data.app.packageName}</b><br>
         Version: <b>${data.app.versionName} (${data.app.versionCode})</b><br>
-        <a href="${data.app.apkUrl}" target="_blank">⬇ Download APK</a>
-        ${data.app.aabUrl ? `<br><a href="${data.app.aabUrl}" target="_blank">⬇ Download AAB</a>` : ''}
+        <a href="${BACKEND_URL}${data.app.apkUrl}" target="_blank">⬇ Download APK</a>
+        ${data.app.aabUrl ? `<br><a href="${BACKEND_URL}${data.app.aabUrl}" target="_blank">⬇ Download AAB</a>` : ''}
       `;
     } else {
       buildExists = false;
