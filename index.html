@@ -45,7 +45,7 @@
     </form>
 
     <p style="text-align:center;margin:10px 0;">OR</p>
-    <button id="payAAB">💰 Generate AAB (₹6,999)</button>
+    <button id="payAAB">💰 Generate Paid AAB (₹6,999)</button>
 
     <div id="result"></div>
   </div>
@@ -54,12 +54,16 @@
     <p>© 2025 Fleepzon Softech | <a href="mailto:support@fleepzonsoftech.com">Contact Support</a></p>
   </footer>
 
+  <!-- Razorpay checkout -->
   <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
   <script>
-    const BACKEND_URL = "http://localhost:3000"; // Replace with your public server after deployment
+    // Change this to your backend URL or public server
+    const BACKEND_URL = "http://localhost:3000";
+
     const form = document.getElementById("appForm");
     const resultBox = document.getElementById("result");
 
+    // Build APK form submission
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
       resultBox.style.display = "block";
@@ -86,14 +90,15 @@
           resultBox.style.color = "#721c24";
           resultBox.innerHTML = "❌ Build failed. Try again.";
         }
-      } catch (error) {
-        console.error(error);
+      } catch (err) {
+        console.error(err);
         resultBox.style.background = "#f8d7da";
         resultBox.style.color = "#721c24";
         resultBox.innerHTML = "⚠️ Connection error. Check backend server URL.";
       }
     });
 
+    // Paid AAB button
     document.getElementById("payAAB").addEventListener("click", async () => {
       try {
         const res = await fetch(`${BACKEND_URL}/create-order`, {
@@ -102,28 +107,26 @@
           body: JSON.stringify({ amount: 6999 })
         });
         const data = await res.json();
-        if (data.success) {
-          const options = {
-            key: data.key_id,
-            amount: data.order.amount,
-            currency: data.order.currency,
-            name: "Fleepzon Softech",
-            description: "Paid AAB Generation",
-            order_id: data.order.id,
-            handler: async function(response) {
-              const verifyRes = await fetch(`${BACKEND_URL}/verify-payment`, {
-                method: "POST",
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(response)
-              });
-              const verifyData = await verifyRes.json();
-              alert(verifyData.message);
-            }
-          };
-          new Razorpay(options).open();
-        } else {
-          alert("❌ Failed to create order");
-        }
+        if (!data.success) throw new Error("Order creation failed");
+
+        const options = {
+          key: data.key_id,
+          amount: data.order.amount,
+          currency: data.order.currency,
+          name: "Fleepzon Softech",
+          description: "Paid AAB Generation",
+          order_id: data.order.id,
+          handler: async function(response) {
+            const verifyRes = await fetch(`${BACKEND_URL}/verify-payment`, {
+              method: "POST",
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(response)
+            });
+            const verifyData = await verifyRes.json();
+            alert(verifyData.message);
+          }
+        };
+        new Razorpay(options).open();
       } catch (err) {
         console.error(err);
         alert("⚠️ Connection error. Check backend server URL.");
@@ -132,4 +135,3 @@
   </script>
 </body>
 </html>
-
