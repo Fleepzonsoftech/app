@@ -1,121 +1,88 @@
-import express from "express";
-import multer from "multer";
-import cors from "cors";
-import fs from "fs-extra";
-import path from "path";
-import dotenv from "dotenv";
-import { exec } from "child_process";
-import Razorpay from "razorpay";
-import bodyParser from "body-parser";
-import crypto from "crypto";
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🌐 Web to App Builder - Fleepzon Softech</title>
+  <style>
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f4f7fa; padding: 40px; color: #222; }
+    .container { max-width: 720px; background: white; margin: auto; padding: 30px; border-radius: 15px; box-shadow: 0 6px 25px rgba(0,0,0,0.1); }
+    h2 { text-align: center; color: #007bff; font-weight: 700; }
+    input, select { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ccc; border-radius: 8px; font-size: 15px; }
+    button { width: 100%; padding: 12px; border: none; background: #007bff; color: white; font-size: 16px; border-radius: 8px; cursor: pointer; transition: 0.3s; }
+    button:hover { background: #0056b3; }
+    .btn-success { background: #28a745; }
+    .btn-success:hover { background: #218838; }
+    #result { margin-top: 20px; padding: 15px; border-radius: 10px; display: none; text-align: center; word-break: break-word; font-size: 16px; }
+    a { color: #007bff; font-weight: bold; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    footer { margin-top: 40px; text-align: center; font-size: 14px; color: #666; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>🌐 Convert Your Website to Android App (Free APK)</h2>
 
-dotenv.config();
-const app = express();
+    <form id="appForm" enctype="multipart/form-data">
+      <input type="text" name="appName" placeholder="App Name *" required>
+      <input type="text" name="packageName" placeholder="Package Name *" required>
+      <input type="text" name="versionName" placeholder="Version Name *" required>
+      <input type="number" name="versionCode" placeholder="Version Code *" required>
+      <input type="url" name="websiteUrl" placeholder="Website URL *" required>
+      <label>Upload App Icon *</label>
+      <input type="file" name="icon" accept="image/*" required>
+      <label>Upload Splash Screen *</label>
+      <input type="file" name="splash" accept="image/*" required>
+      <input type="email" name="email" placeholder="Email *" required>
+      <button type="submit" class="btn-success">🚀 Generate Free APK</button>
+    </form>
 
-// Middleware
-app.use(cors());
-app.use(bodyParser.json());
-app.use(express.urlencoded({ extended: true }));
-app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
+    <div id="result"></div>
+  </div>
 
-// Multer setup for uploads
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    const tempDir = path.join("uploads", "temp");
-    fs.ensureDirSync(tempDir);
-    cb(null, tempDir);
-  },
-  filename: (req, file, cb) => cb(null, Date.now() + "_" + file.originalname),
-});
-const upload = multer({ storage });
+  <footer>
+    <p>© 2025 Fleepzon Softech | <a href="mailto:support@fleepzonsoftech.com">Contact Support</a></p>
+  </footer>
 
-// Razorpay setup
-const razorpay = new Razorpay({
-  key_id: process.env.RAZORPAY_KEY_ID,
-  key_secret: process.env.RAZORPAY_KEY_SECRET,
-});
+  <script>
+    const BACKEND_URL = "https://YOUR_DEPLOYED_BACKEND_URL"; // Same as SERVER_URL in .env
 
-// Root route
-app.get("/", (req, res) => res.send("✅ Fleepzon Builder API running!"));
+    const form = document.getElementById("appForm");
+    const resultBox = document.getElementById("result");
 
-// Build APK
-app.post("/api/build", upload.fields([{ name: "icon" }, { name: "splash" }]), async (req, res) => {
-  try {
-    const { appName, packageName, versionName, versionCode } = req.body;
-    if (!appName || !packageName || !versionName || !versionCode)
-      return res.status(400).json({ success: false, message: "Missing fields" });
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      resultBox.style.display = "block";
+      resultBox.style.background = "#fff3cd";
+      resultBox.style.color = "#856404";
+      resultBox.innerHTML = "⏳ Please wait... Building your APK...";
 
-    // Copy template
-    const projectTemplate = path.join(process.cwd(), "androidTemplate");
-    const tempBuild = path.join("uploads", "tempBuild", Date.now().toString());
-    fs.copySync(projectTemplate, tempBuild);
+      const formData = new FormData(form);
 
-    // Replace placeholders in build.gradle
-    const buildGradlePath = path.join(tempBuild, "app", "build.gradle");
-    let gradleFile = fs.readFileSync(buildGradlePath, "utf-8");
-    gradleFile = gradleFile
-      .replace(/APPLICATION_ID_PLACEHOLDER/g, packageName)
-      .replace(/VERSION_CODE_PLACEHOLDER/g, versionCode)
-      .replace(/VERSION_NAME_PLACEHOLDER/g, versionName);
-    fs.writeFileSync(buildGradlePath, gradleFile);
+      try {
+        const res = await fetch(`${BACKEND_URL}/api/build`, { method: "POST", body: formData });
+        if (!res.ok) throw new Error("Server not responding");
 
-    // Copy icons & splash
-    fs.copySync(req.files.icon[0].path, path.join(tempBuild, "app", "src", "main", "res", "mipmap-xxxhdpi", "ic_launcher.png"));
-    fs.copySync(req.files.splash[0].path, path.join(tempBuild, "app", "src", "main", "res", "drawable", "splash.png"));
-
-    // Run Gradle build
-    exec(`cd ${tempBuild} && ./gradlew assembleRelease`, (err) => {
-      if (err) {
+        const data = await res.json();
+        if (data.success) {
+          resultBox.style.background = "#e9f7ef";
+          resultBox.style.color = "#155724";
+          resultBox.innerHTML = `
+            ✅ <b>Success!</b><br>Your APK is ready.<br><br>
+            <a href="${data.downloadUrl}" target="_blank" download>⬇ Download Now</a>
+          `;
+        } else {
+          resultBox.style.background = "#f8d7da";
+          resultBox.style.color = "#721c24";
+          resultBox.innerHTML = "❌ Build failed. Try again.";
+        }
+      } catch (err) {
         console.error(err);
-        return res.status(500).json({ success: false, message: "APK build failed" });
+        resultBox.style.background = "#f8d7da";
+        resultBox.style.color = "#721c24";
+        resultBox.innerHTML = "⚠️ Connection error. Check backend server URL.";
       }
-
-      const apkPath = path.join(tempBuild, "app/build/outputs/apk/release/app-release.apk");
-      const buildDir = path.join("uploads", "builds");
-      fs.ensureDirSync(buildDir);
-      const apkName = `${packageName}.apk`;
-      fs.copySync(apkPath, path.join(buildDir, apkName));
-
-      const serverUrl = process.env.SERVER_URL || `http://localhost:${process.env.PORT || 3000}`;
-      const downloadUrl = `${serverUrl}/uploads/builds/${apkName}`;
-      res.json({ success: true, downloadUrl });
     });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ success: false, message: "Internal Server Error" });
-  }
-});
-
-// Razorpay create order
-app.post("/create-order", async (req, res) => {
-  try {
-    const { amount } = req.body;
-    const options = {
-      amount: amount * 100,
-      currency: "INR",
-      receipt: "rcpt_" + Date.now(),
-      payment_capture: 1,
-    };
-    const order = await razorpay.orders.create(options);
-    res.json({ success: true, order, key_id: process.env.RAZORPAY_KEY_ID });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ success: false, error: err.message });
-  }
-});
-
-// Razorpay verify payment
-app.post("/verify-payment", (req, res) => {
-  const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
-  const generated_signature = crypto
-    .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
-    .update(razorpay_order_id + "|" + razorpay_payment_id)
-    .digest("hex");
-
-  if (generated_signature === razorpay_signature)
-    res.json({ success: true, message: "✅ Payment verified successfully" });
-  else res.status(400).json({ success: false, message: "❌ Payment verification failed" });
-});
-
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
+  </script>
+</body>
+</html>
