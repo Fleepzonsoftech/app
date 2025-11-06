@@ -13,24 +13,29 @@ app.use(express.urlencoded({ extended: true }));
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// ✅ Serve static files for download
+// ✅ Serve static files for public access
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
+// ✅ Ensure uploads/builds folder exists
+const buildDir = path.join(__dirname, "uploads", "builds");
+if (!fs.existsSync(buildDir)) fs.mkdirSync(buildDir, { recursive: true });
+
+// ✅ Multer setup
 const upload = multer({ dest: "uploads/" });
 
-// ✅ Razorpay setup (replace with your real keys)
+// ✅ Razorpay setup (replace with real keys)
 const razorpay = new Razorpay({
-  key_id: "rzp_test_1234567890", // Replace with your actual Razorpay test key
+  key_id: "rzp_test_1234567890",
   key_secret: "your_secret_key_here"
 });
 
-// ✅ Email setup (use your own Gmail + App Password)
+// ✅ Email setup (optional)
 const transporter = nodemailer.createTransport({
   service: "gmail",
   auth: {
-    user: "examplemail@gmail.com",      // ✅ Replace with your Gmail
-    pass: "your_app_password_here",     // ✅ Replace with your Gmail App Password
-  },
+    user: "examplemail@gmail.com",     // 🔹 Replace with your Gmail
+    pass: "your_app_password_here"     // 🔹 Replace with Gmail App Password
+  }
 });
 
 // ✅ Create Razorpay order
@@ -49,7 +54,7 @@ app.post("/api/create-order", async (req, res) => {
   }
 });
 
-// ✅ Generate APK or AAB file
+// ✅ Generate APK / AAB build
 app.post("/api/submit", upload.fields([{ name: "icon" }, { name: "splash" }]), async (req, res) => {
   try {
     const {
@@ -60,51 +65,58 @@ app.post("/api/submit", upload.fields([{ name: "icon" }, { name: "splash" }]), a
       minSdk,
       websiteUrl,
       email,
-      generateType,
+      generateType
     } = req.body;
 
-    const buildDir = path.join(__dirname, "uploads", "builds");
-    if (!fs.existsSync(buildDir)) fs.mkdirSync(buildDir, { recursive: true });
+    if (!appName || !packageName || !generateType) {
+      return res.status(400).json({ success: false, message: "Missing required fields" });
+    }
 
+    // ✅ File extension based on build type
     const fileExt = generateType === "aab" ? "aab" : "apk";
     const outputFile = `${packageName}.${fileExt}`;
     const outputPath = path.join(buildDir, outputFile);
 
-    // Simulate build file
-    fs.writeFileSync(outputPath, `Dummy ${fileExt} build for ${appName}`);
+    // ✅ Create dummy build file
+    fs.writeFileSync(outputPath, `Dummy ${fileExt} file for ${appName}`);
 
-    // ✅ Correct public download link
+    // ✅ Full public download URL
     const downloadUrl = `${req.protocol}://${req.get("host")}/uploads/builds/${outputFile}`;
+    console.log(`✅ ${fileExt.toUpperCase()} generated at: ${downloadUrl}`);
 
-    console.log(`✅ ${fileExt.toUpperCase()} generated: ${downloadUrl}`);
-
-    // ✅ Send email with download link
+    // ✅ Optional email notification
     if (email) {
-      await transporter.sendMail({
-        from: "App Builder <examplemail@gmail.com>", // ✅ Generic example email
-        to: email,
-        subject: `${appName} ${fileExt.toUpperCase()} Ready`,
-        html: `
-          <h3>Your ${fileExt.toUpperCase()} build is ready!</h3>
-          <p><b>App Name:</b> ${appName}</p>
-          <p><b>Package:</b> ${packageName}</p>
-          <a href="${downloadUrl}">⬇ Download ${fileExt.toUpperCase()}</a>
-        `,
-      });
+      try {
+        await transporter.sendMail({
+          from: "App Builder <examplemail@gmail.com>",
+          to: email,
+          subject: `${appName} ${fileExt.toUpperCase()} Ready`,
+          html: `
+            <h3>Your ${fileExt.toUpperCase()} build is ready!</h3>
+            <p><b>App Name:</b> ${appName}</p>
+            <p><b>Package:</b> ${packageName}</p>
+            <a href="${downloadUrl}">⬇ Download ${fileExt.toUpperCase()}</a>
+          `
+        });
+        console.log(`📧 Email sent to ${email}`);
+      } catch (emailErr) {
+        console.error("⚠️ Email send failed:", emailErr.message);
+      }
     }
 
+    // ✅ Return success response
     res.json({ success: true, downloadUrl });
   } catch (err) {
-    console.error("❌ Error:", err);
+    console.error("❌ Error generating build:", err);
     res.status(500).json({ success: false, message: err.message });
   }
 });
 
-// ✅ Root route
+// ✅ Test route
 app.get("/", (req, res) => {
-  res.send("🚀 Web to App Builder Backend Running");
+  res.send("🚀 Web to App Builder Backend Running Successfully!");
 });
 
 // ✅ Start server
-const PORT = 5000;
+const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`✅ Server running at http://localhost:${PORT}`));
