@@ -1,0 +1,71 @@
+{
+  "name": "web-to-app-builder",
+  "version": "1.0.0",
+  "description": "A backend and frontend tool to convert websites into Android apps with file upload, MongoDB, and Razorpay integration.",
+  "main": "server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "crypto": "^1.0.1",
+    "dotenv": "^16.3.1",
+    "express": "^4.19.2",
+    "fs-extra": "^11.2.0",
+    "mongoose": "^8.5.1",
+    "multer": "^1.4.5-lts.1",
+    "razorpay": "^2.9.4"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.0"
+  },
+  "keywords": [
+    "web-to-app",
+    "express",
+    "razorpay",
+    "mongodb",
+    "multer",
+    "api",
+    "android-builder"
+  ],
+  "author": "Your Name",
+  "license": "MIT",
+
+  "examples": {
+    "checkVersion": {
+      "exists": true,
+      "versionName": "1.0.1",
+      "versionCode": 2
+    },
+    "noVersion": {
+      "exists": false
+    },
+    "buildSuccess": {
+      "success": true,
+      "message": "🎉 MyApp created successfully!",
+      "downloadUrl": "http://localhost:5000/uploads/builds/com.myapp.apk"
+    },
+    "buildWithLinks": {
+      "success": true,
+      "data": {
+        "appName": "Example App",
+        "packageName": "com.example"
+      },
+      "apkLink": "http://localhost:5000/uploads/builds/com.example.apk",
+      "aabLink": "http://localhost:5000/uploads/builds/com.example.aab"
+    },
+    "razorpayPaymentData": {
+      "packageName": "com.myapp",
+      "razorpay_order_id": "order_J7zM...",
+      "razorpay_payment_id": "pay_J7zN...",
+      "razorpay_signature": "generated_signature"
+    },
+    "paymentVerified": {
+      "success": true,
+      "message": "✅ Payment verified & AAB generated!",
+      "downloadAAB": "http://localhost:5000/uploads/builds/com.myapp.aab"
+    }
+  }
+}
