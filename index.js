@@ -28,14 +28,24 @@
       <input type="text" name="packageName" placeholder="Package Name *" required>
       <input type="text" name="versionName" placeholder="Version Name *" required>
       <input type="number" name="versionCode" placeholder="Version Code *" required>
+      <select name="minSdk" required>
+        <option value="">Select Minimum SDK</option>
+        <option value="21">21 (Android 5.0)</option>
+        <option value="29">29 (Android 10)</option>
+        <option value="34">34 (Android 14)</option>
+      </select>
       <input type="url" name="websiteUrl" placeholder="Website URL *" required>
       <label>Upload App Icon *</label>
       <input type="file" name="icon" accept="image/*" required>
       <label>Upload Splash Screen *</label>
       <input type="file" name="splash" accept="image/*" required>
       <input type="email" name="email" placeholder="Email *" required>
+
       <button type="submit" class="btn-success">🚀 Generate Free APK</button>
     </form>
+
+    <p style="text-align:center;margin:10px 0;">OR</p>
+    <button id="payAAB">💰 Generate Paid AAB (₹6,999)</button>
 
     <div id="result"></div>
   </div>
@@ -44,12 +54,16 @@
     <p>© 2025 Fleepzon Softech | <a href="mailto:support@fleepzonsoftech.com">Contact Support</a></p>
   </footer>
 
+  <!-- Razorpay checkout -->
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
   <script>
-    const BACKEND_URL = "https://YOUR_DEPLOYED_BACKEND_URL"; // Same as SERVER_URL in .env
+    // Automatically detect backend IP using current host
+    const BACKEND_URL = `${window.location.protocol}//${window.location.hostname}:3000`;
 
     const form = document.getElementById("appForm");
     const resultBox = document.getElementById("result");
 
+    // Build APK form submission
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
       resultBox.style.display = "block";
@@ -81,6 +95,41 @@
         resultBox.style.background = "#f8d7da";
         resultBox.style.color = "#721c24";
         resultBox.innerHTML = "⚠️ Connection error. Check backend server URL.";
+      }
+    });
+
+    // Paid AAB button
+    document.getElementById("payAAB").addEventListener("click", async () => {
+      try {
+        const res = await fetch(`${BACKEND_URL}/create-order`, {
+          method: "POST",
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ amount: 6999 })
+        });
+        const data = await res.json();
+        if (!data.success) throw new Error("Order creation failed");
+
+        const options = {
+          key: data.key_id,
+          amount: data.order.amount,
+          currency: data.order.currency,
+          name: "Fleepzon Softech",
+          description: "Paid AAB Generation",
+          order_id: data.order.id,
+          handler: async function(response) {
+            const verifyRes = await fetch(`${BACKEND_URL}/verify-payment`, {
+              method: "POST",
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(response)
+            });
+            const verifyData = await verifyRes.json();
+            alert(verifyData.message);
+          }
+        };
+        new Razorpay(options).open();
+      } catch (err) {
+        console.error(err);
+        alert("⚠️ Connection error. Check backend server URL.");
       }
     });
   </script>
