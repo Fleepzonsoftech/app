@@ -5,20 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>🌐 Web to App Builder - Fleepzon Softech</title>
   <style>
-    body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: #f4f7fa;
-      padding: 40px;
-      color: #222;
-    }
-    .container {
-      max-width: 720px;
-      background: white;
-      margin: auto;
-      padding: 30px;
-      border-radius: 15px;
-      box-shadow: 0 6px 25px rgba(0,0,0,0.1);
-    }
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f4f7fa; padding: 40px; color: #222; }
+    .container { max-width: 720px; background: white; margin: auto; padding: 30px; border-radius: 15px; box-shadow: 0 6px 25px rgba(0,0,0,0.1); }
     h2 { text-align: center; color: #007bff; font-weight: 700; }
     input, select { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ccc; border-radius: 8px; font-size: 15px; }
     button { width: 100%; padding: 12px; border: none; background: #007bff; color: white; font-size: 16px; border-radius: 8px; cursor: pointer; transition: 0.3s; }
@@ -66,9 +54,9 @@
     <p>© 2025 Fleepzon Softech | <a href="mailto:support@fleepzonsoftech.com">Contact Support</a></p>
   </footer>
 
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
   <script>
-    const BACKEND_URL = "https://your-backend-domain.com"; // Replace with your Node.js server URL
-
+    const BACKEND_URL = "http://localhost:3000"; // Replace with your public server after deployment
     const form = document.getElementById("appForm");
     const resultBox = document.getElementById("result");
 
@@ -82,15 +70,10 @@
       const formData = new FormData(form);
 
       try {
-        const res = await fetch(`${BACKEND_URL}/api/build`, {
-          method: "POST",
-          body: formData,
-        });
-
+        const res = await fetch(`${BACKEND_URL}/api/build`, { method: "POST", body: formData });
         if (!res.ok) throw new Error("Server not responding");
 
         const data = await res.json();
-
         if (data.success) {
           resultBox.style.background = "#e9f7ef";
           resultBox.style.color = "#155724";
@@ -104,16 +87,49 @@
           resultBox.innerHTML = "❌ Build failed. Try again.";
         }
       } catch (error) {
-        console.error("❌ Error:", error);
+        console.error(error);
         resultBox.style.background = "#f8d7da";
         resultBox.style.color = "#721c24";
         resultBox.innerHTML = "⚠️ Connection error. Check backend server URL.";
       }
     });
 
-    document.getElementById("payAAB").addEventListener("click", () => {
-      alert("💳 Paid AAB generation will be available soon!");
+    document.getElementById("payAAB").addEventListener("click", async () => {
+      try {
+        const res = await fetch(`${BACKEND_URL}/create-order`, {
+          method: "POST",
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ amount: 6999 })
+        });
+        const data = await res.json();
+        if (data.success) {
+          const options = {
+            key: data.key_id,
+            amount: data.order.amount,
+            currency: data.order.currency,
+            name: "Fleepzon Softech",
+            description: "Paid AAB Generation",
+            order_id: data.order.id,
+            handler: async function(response) {
+              const verifyRes = await fetch(`${BACKEND_URL}/verify-payment`, {
+                method: "POST",
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(response)
+              });
+              const verifyData = await verifyRes.json();
+              alert(verifyData.message);
+            }
+          };
+          new Razorpay(options).open();
+        } else {
+          alert("❌ Failed to create order");
+        }
+      } catch (err) {
+        console.error(err);
+        alert("⚠️ Connection error. Check backend server URL.");
+      }
     });
   </script>
 </body>
 </html>
+
