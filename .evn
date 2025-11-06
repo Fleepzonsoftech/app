@@ -1,7 +1,3 @@
-# Server settings
-SERVER_URL=https://YOUR_DEPLOYED_BACKEND_URL   # Example: https://fleepzon-builder.up.railway.app
-PORT=3000
-
-# Razorpay credentials
 RAZORPAY_KEY_ID=YOUR_RAZORPAY_KEY_ID
 RAZORPAY_KEY_SECRET=YOUR_RAZORPAY_KEY_SECRET
+
