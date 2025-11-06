@@ -23,7 +23,7 @@
     form { display: flex; flex-direction: column; gap: 12px; }
     label { font-weight: 600; color: #333; }
     input[type="text"], input[type="number"], input[type="url"],
-    input[type="file"], select, textarea {
+    input[type="file"], select, textarea, input[type="email"] {
       padding: 10px 12px; border-radius: 8px; border: 1px solid #ccc;
       transition: all 0.2s ease;
     }
@@ -46,7 +46,6 @@
       text-align: center; display: none;
     }
 
-    /* ✅ Search Section */
     .search-section { text-align: center; margin-top: 40px; padding-top: 20px; border-top: 1px solid #eee; }
     .search-box { display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; }
     .search-box input {
@@ -56,12 +55,6 @@
     .search-results { margin-top: 20px; background: #f8f9fa; border-radius: 8px; padding: 15px; display: none; }
     .app-item { padding: 10px; border-bottom: 1px solid #ddd; text-align: left; }
     .app-item:last-child { border-bottom: none; }
-
-    @media (max-width: 600px) {
-      body { padding: 15px; }
-      .container { padding: 25px; }
-      .search-box input { width: 100%; }
-    }
   </style>
 </head>
 
@@ -75,44 +68,31 @@
 
     <hr>
 
-    <h2>🚀 How It Works</h2>
-    <ul>
-      <li>1️⃣ Submit website and app details below.</li>
-      <li>2️⃣ Wait a few minutes while we generate your app.</li>
-      <li>3️⃣ Download APK or AAB build (₹6,999).</li>
-      <li>4️⃣ Publish directly to Play Store.</li>
-      <li>5️⃣ Email id is required for send your apk and .aab file .</li>
-
-    </ul>
-
-    <hr>
-
-    <h2>📋 Submit Your App Details</h2>
-    <form id="appForm">
+    <form id="appForm" enctype="multipart/form-data">
       <label>App Name *</label>
-      <input type="text" name="appName" placeholder="Enter your app name" required>
+      <input type="text" name="appName" required>
 
       <label>Package Name *</label>
-      <input type="text" name="packageName" placeholder="com.example.app" required>
+      <input type="text" name="packageName" required>
 
       <label>Version Name *</label>
-      <input type="text" name="versionName" placeholder="1.0.0" required>
+      <input type="text" name="versionName" required>
 
       <label>Version Code *</label>
-      <input type="number" name="versionCode" placeholder="1" required>
+      <input type="number" name="versionCode" required>
 
       <label>minSdk *</label>
       <select name="minSdk" required>
         <option value="">-- Select SDK --</option>
-        <option value="21">21 (Lollipop)</option>
-        <option value="23">23 (Marshmallow)</option>
-        <option value="26">26 (Oreo)</option>
-        <option value="29">29 (Android Q)</option>
+        <option value="21">21</option>
+        <option value="23">23</option>
+        <option value="26">26</option>
+        <option value="29">29</option>
         <option value="34">34 (Android 14)</option>
       </select>
 
       <label>Website URL *</label>
-      <input type="url" name="website" placeholder="https://yourwebsite.com" required>
+      <input type="url" name="websiteUrl" required>
 
       <label>App Icon *</label>
       <input type="file" name="icon" accept="image/*" required>
@@ -120,30 +100,8 @@
       <label>Splash Image *</label>
       <input type="file" name="splash" accept="image/*" required>
 
-      <h3>🧩 Add-ons / Feature Toggles</h3>
-      <label><input type="checkbox" name="addons" value="firebase"> Firebase Push Notification</label>
-      <label><input type="checkbox" name="addons" value="admob"> AdMob Ads</label>
-      <label><input type="checkbox" name="addons" value="drawer"> Navigation Drawer</label>
-      <label><input type="checkbox" name="addons" value="bottomnav"> Bottom Navigation</label>
-      <label><input type="checkbox" name="addons" value="signin"> Google Sign-In</label>
-      <label><input type="checkbox" name="addons" value="iap"> In-App Purchase (IAP)</label>
-      <label><input type="checkbox" name="addons" value="qr"> QR Scanner</label>
-      <label><input type="checkbox" name="addons" value="darkmode"> Dark Mode</label>
-
-      <h3>🎯 AdMob Integration</h3>
-      <label>AdMob App ID</label>
-      <input type="text" name="admobAppId" placeholder="ca-app-pub-xxxx~yyyy">
-      <label>Banner Ad Unit ID</label>
-      <input type="text" name="bannerAd" placeholder="ca-app-pub-xxxx/yyyy">
-      <label>Rewarded Ad Unit ID</label>
-      <input type="text" name="rewardedAd" placeholder="ca-app-pub-xxxx/yyyy">
-      <label><input type="checkbox" name="testMode"> Enable Test Ads</label>
-
-      <h3>📱 Versioning & SDK</h3>
-      <p><b>Rules:</b> versionCode must increase for every update. minSdk ≤ targetSdk ≤ compileSdk.</p>
-
-      <h3>📩 Contact Email</h3>
-      <input type="email" name="contactEmail" placeholder="youremail@example.com" required>
+      <label>Contact Email *</label>
+      <input type="email" name="email" required>
 
       <hr>
       <button type="submit" class="btn-success">Generate Free APK</button>
@@ -152,28 +110,40 @@
     </form>
 
     <div id="result"></div>
-
-    <div class="search-section">
-      <h3>🔍 Search Your App</h3>
-      <p>Already submitted? Find and download below.</p>
-      <div class="search-box">
-        <input type="text" id="searchInput" placeholder="Enter app name or package name...">
-        <button onclick="searchApp()">Search</button>
-      </div>
-      <div id="searchResults" class="search-results"></div>
-    </div>
   </div>
 
   <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
   <script>
-    document.getElementById("appForm").addEventListener("submit", e => {
+    const form = document.getElementById("appForm");
+    const resultBox = document.getElementById("result");
+
+    form.addEventListener("submit", async (e) => {
       e.preventDefault();
-      const result = document.getElementById("result");
-      result.style.display = "block";
-      result.innerHTML = "⏳ Generating your APK...";
-      setTimeout(() => {
-        result.innerHTML = "✅ Your APK is ready! <a href='#' style='color:#007bff;font-weight:600;'>Download Now</a>";
-      }, 2500);
+      resultBox.style.display = "block";
+      resultBox.innerHTML = "⏳ Generating your APK...";
+
+      const formData = new FormData(form);
+      formData.append("generateType", "apk");
+
+      try {
+        const res = await fetch("http://localhost:5000/api/submit", {
+          method: "POST",
+          body: formData,
+        });
+        const data = await res.json();
+
+        if (data.success) {
+          resultBox.innerHTML = `
+            ✅ Your APK is ready!<br>
+            <a href="${data.downloadUrl}" download style="color:#007bff;font-weight:600;">⬇ Download Now</a>
+          `;
+        } else {
+          resultBox.innerHTML = "❌ Build failed. Try again.";
+        }
+      } catch (err) {
+        resultBox.innerHTML = "⚠️ Server not reachable.";
+        console.error(err);
+      }
     });
 
     document.getElementById("payAAB").addEventListener("click", function() {
@@ -183,37 +153,29 @@
         currency: "INR",
         name: "Web to App Builder",
         description: "AAB Generation Fee",
-        handler: function (response) {
+        handler: async function (response) {
           alert("✅ Payment successful: " + response.razorpay_payment_id);
-          document.getElementById("result").style.display = "block";
-          document.getElementById("result").innerHTML = "🎉 Payment Successful! AAB build is in progress...";
+          const formData = new FormData(form);
+          formData.append("generateType", "aab");
+          const res = await fetch("http://localhost:5000/api/submit", {
+            method: "POST",
+            body: formData,
+          });
+          const data = await res.json();
+          if (data.success) {
+            resultBox.style.display = "block";
+            resultBox.innerHTML = `
+              ✅ Your AAB is ready!<br>
+              <a href="${data.downloadUrl}" download style="color:#007bff;font-weight:600;">⬇ Download Now</a>
+            `;
+          }
         },
         theme: { color: "#007bff" }
       };
       new Razorpay(options).open();
     });
-
-    const mockApps = [
-      { name: "Earn to Ads", package: "cpm.ai.earntoads", link: "#download1" },
-      { name: "Shoply App", package: "com.shoply.app", link: "#download2" },
-      { name: "NewsNow", package: "com.news.now", link: "#download3" }
-    ];
-
-    function searchApp() {
-      const query = document.getElementById("searchInput").value.toLowerCase().trim();
-      const resultsDiv = document.getElementById("searchResults");
-      resultsDiv.innerHTML = "";
-      if (!query) { alert("Enter app name or package name"); return; }
-
-      const found = mockApps.filter(app =>
-        app.name.toLowerCase().includes(query) || app.package.toLowerCase().includes(query)
-      );
-
-      resultsDiv.style.display = "block";
-      resultsDiv.innerHTML = found.length
-        ? found.map(a => `<div class='app-item'><strong>${a.name}</strong><br>Package: ${a.package}<br><a href='${a.link}'>⬇ Download</a></div>`).join("")
-        : "<p>No matching apps found.</p>";
-    }
   </script>
 </body>
 </html>
+
+  
