@@ -5,70 +5,18 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>🌐 Web to App Builder - Fleepzon Softech</title>
   <style>
-    body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: #f4f7fa;
-      padding: 40px;
-      color: #222;
-    }
-    .container {
-      max-width: 720px;
-      background: white;
-      margin: auto;
-      padding: 30px;
-      border-radius: 15px;
-      box-shadow: 0 6px 25px rgba(0,0,0,0.1);
-    }
-    h2 {
-      text-align: center;
-      color: #007bff;
-      font-weight: 700;
-    }
-    input, select {
-      width: 100%;
-      padding: 12px;
-      margin: 10px 0;
-      border: 1px solid #ccc;
-      border-radius: 8px;
-      font-size: 15px;
-    }
-    button {
-      width: 100%;
-      padding: 12px;
-      border: none;
-      background: #007bff;
-      color: white;
-      font-size: 16px;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: 0.3s;
-    }
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f4f7fa; padding: 40px; color: #222; }
+    .container { max-width: 720px; background: white; margin: auto; padding: 30px; border-radius: 15px; box-shadow: 0 6px 25px rgba(0,0,0,0.1); }
+    h2 { text-align: center; color: #007bff; font-weight: 700; }
+    input, select { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ccc; border-radius: 8px; font-size: 15px; }
+    button { width: 100%; padding: 12px; border: none; background: #007bff; color: white; font-size: 16px; border-radius: 8px; cursor: pointer; transition: 0.3s; }
     button:hover { background: #0056b3; }
     .btn-success { background: #28a745; }
     .btn-success:hover { background: #218838; }
-    #result {
-      margin-top: 20px;
-      padding: 15px;
-      border-radius: 10px;
-      background: #e9f7ef;
-      color: #155724;
-      display: none;
-      text-align: center;
-      word-break: break-word;
-      font-size: 16px;
-    }
-    a {
-      color: #007bff;
-      font-weight: bold;
-      text-decoration: none;
-    }
+    #result { margin-top: 20px; padding: 15px; border-radius: 10px; background: #e9f7ef; color: #155724; display: none; text-align: center; word-break: break-word; font-size: 16px; }
+    a { color: #007bff; font-weight: bold; text-decoration: none; }
     a:hover { text-decoration: underline; }
-    footer {
-      margin-top: 40px;
-      text-align: center;
-      font-size: 14px;
-      color: #666;
-    }
+    footer { margin-top: 40px; text-align: center; font-size: 14px; color: #666; }
   </style>
 </head>
 <body>
@@ -107,7 +55,6 @@
   </footer>
 
   <script>
-    // 🌍 Backend URL — public live server
     const BACKEND_URL = "https://fleepzon-builder.onrender.com";
 
     const form = document.getElementById("appForm");
@@ -142,7 +89,7 @@
         } else {
           resultBox.style.background = "#f8d7da";
           resultBox.style.color = "#721c24";
-          resultBox.innerHTML = `❌ Build failed: ${data.message || "Try again"}`;
+          resultBox.innerHTML = "❌ Build failed. Try again.";
         }
       } catch (error) {
         console.error("❌ Error:", error);
@@ -158,4 +105,3 @@
   </script>
 </body>
 </html>
-
