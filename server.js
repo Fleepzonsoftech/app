@@ -8,6 +8,7 @@ import { exec } from "child_process";
 import Razorpay from "razorpay";
 import bodyParser from "body-parser";
 import crypto from "crypto";
+import os from "os";
 
 dotenv.config();
 const app = express();
@@ -35,6 +36,19 @@ const razorpay = new Razorpay({
   key_secret: process.env.RAZORPAY_KEY_SECRET,
 });
 
+// Helper: get local IP
+function getLocalIP() {
+  const nets = os.networkInterfaces();
+  for (const name of Object.keys(nets)) {
+    for (const net of nets[name]) {
+      if (net.family === "IPv4" && !net.internal) {
+        return net.address;
+      }
+    }
+  }
+  return "127.0.0.1";
+}
+
 // Root route
 app.get("/", (req, res) => res.send("✅ Fleepzon Builder API running!"));
 
@@ -49,6 +63,7 @@ app.post("/api/build", upload.fields([{ name: "icon" }, { name: "splash" }]), as
     const tempBuild = path.join("uploads", "tempBuild", Date.now().toString());
     fs.copySync(projectTemplate, tempBuild);
 
+    // Update build.gradle
     const buildGradlePath = path.join(tempBuild, "app", "build.gradle");
     let gradleFile = fs.readFileSync(buildGradlePath, "utf-8");
     gradleFile = gradleFile
@@ -57,9 +72,11 @@ app.post("/api/build", upload.fields([{ name: "icon" }, { name: "splash" }]), as
       .replace(/VERSION_NAME_PLACEHOLDER/g, versionName);
     fs.writeFileSync(buildGradlePath, gradleFile);
 
+    // Copy icon and splash
     fs.copySync(req.files.icon[0].path, path.join(tempBuild, "app", "src", "main", "res", "mipmap-xxxhdpi", "ic_launcher.png"));
     fs.copySync(req.files.splash[0].path, path.join(tempBuild, "app", "src", "main", "res", "drawable", "splash.png"));
 
+    // Build APK
     exec(`cd ${tempBuild} && ./gradlew assembleRelease`, (err) => {
       if (err) {
         console.error(err);
@@ -72,7 +89,8 @@ app.post("/api/build", upload.fields([{ name: "icon" }, { name: "splash" }]), as
       const apkName = `${packageName}.apk`;
       fs.copySync(apkPath, path.join(buildDir, apkName));
 
-      const serverUrl = process.env.SERVER_URL || `http://localhost:${process.env.PORT || 3000}`;
+      // Use dynamic IP
+      const serverUrl = process.env.SERVER_URL || `http://${getLocalIP()}:${process.env.PORT || 3000}`;
       const downloadUrl = `${serverUrl}/uploads/builds/${apkName}`;
       res.json({ success: true, downloadUrl });
     });
@@ -114,4 +132,8 @@ app.post("/verify-payment", (req, res) => {
 });
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
+app.listen(PORT, () => {
+  console.log(`🚀 Server running on http://${getLocalIP()}:${PORT}`);
+  console.log("💡 Use this IP in your frontend BACKEND_URL for mobile/emulator access");
+});
+
